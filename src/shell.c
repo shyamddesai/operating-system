@@ -41,28 +41,45 @@ int main(int argc, char *argv[]) {
 
 }
 
-// Extract words from the input then call interpreter
 int parseInput(char ui[]) {
- 
-	char tmp[200];
-	char *words[100];							
-	int a,b;							
-	int w=0; // wordID
+    char tmp[200];
+    char *words[100];                            
+    int a = 0;
+    int b;                            
+    int w=0; // wordID    
+    int errorCode;
+    for(a=0; ui[a]==' ' && a<1000; a++);        // skip white spaces
 
-	for(a=0; ui[a]==' ' && a<1000; a++);		// skip white spaces
+    while(ui[a] != '\n' && ui[a] != '\0' && a<1000) {
+        for(b=0; ui[a]!=';' && ui[a]!='\0' && ui[a]!='\n' && ui[a]!=' ' && a<1000; a++, b++)
+            tmp[b] = ui[a];                        // extract a word
+        tmp[b] = '\0';
 
-	while(ui[a] != '\0' && a<1000) {
+        words[w] = strdup(tmp);
 
-		for(b=0; ui[a]!='\0' && ui[a]!=' ' && a<1000; a++, b++)
-			tmp[b] = ui[a];						// extract a word
-	 
-		tmp[b] = '\0';
+        if(ui[a]==';'){
+            w++;
 
-		words[w] = strdup(tmp);
+            errorCode = interpreter(words, w);
+            if(errorCode == -1){
+                return errorCode;
+            }
 
-		a++; 
-		w++;
-	}
+            a++;
+            w = 0;
+            for(; ui[a]==' ' && a<1000; a++);        // skip white spaces
+            continue;
+        }
 
-	return interpreter(words, w);
+        w++;
+        //Note I only added this if statement.
+        if(ui[a] == '\0'){
+            break;
+        }
+        a++; 
+    }
+    
+    errorCode = interpreter(words, w);
+
+    return errorCode;
 }

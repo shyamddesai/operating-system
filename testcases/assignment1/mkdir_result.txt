@@ -6,6 +6,6 @@ COMMAND                 DESCRIPTION
  print VAR              Displays the STRING assigned to VAR
  run SCRIPT.TXT         Executes the file SCRIPT.TXT
  
-f1
-f2
+Bad command: my_mkdir
+tata
 $ $ Bye!
