@@ -4,12 +4,32 @@ The following document is based on Professor Christophe Dubach's README for the 
 The description of the coursework may be updated from time to time to add clarifications or fix mistakes.
 We encourage you to regularly check this repository and/or MyCourses for changes.
 
-# Software requirements #
-If you use CS department lab machines, all the software required for development should be already installed.
+# Software requirements
+### Recommended: using CS machines (Mimi)
+If you use CS department lab machines, all the software required for development should be already installed. The CS machines 
+grant you access to a Linux home folder where you can keep your repository and do your work. This home folder is shared 
+amongst all CS machines when you log in using your CS account.
+
+To log in (SSH) into Mimi use the following command:
+```
+ssh <your_cs_username>@mimi.cs.mcgill.ca
+```
+
+It will ask for your CS account password. You will be dropped into a terminal in your home directory (`~`).
+
+We recommend you clone your team's fork of the code into your home directory:
+```
+git clone https://gitlab.cs.mcgill.ca/<your_cs_username>/comp310-winter23.git
+```
+
+After that, you can use Visual Studio Code SSH feature to modify the files in Mimi from your own machine. Follow these instructions:
+https://code.visualstudio.com/docs/remote/ssh
+
+### Using your own machine
 If you wish to develop using your own machine, you will need to ensure that you have the following software installed:
 
 1. Git (use the following tutorial https://www.atlassian.com/git/tutorials/install-git)
-2. GNU C Compiler (>=9.4.0). On Mac, `gcc` calls `clang`, which should be compatible, but **you may face issues**. On Windows (not recommended), you can use [cygwin](https://www.cygwin.com/) to install the GNU tools.
+2. GNU C Compiler (>=9.4.0). On Mac, `gcc` calls `clang`, which should be compatible, but **you may face issues**. On Windows, you can use [cygwin](https://www.cygwin.com/) to install the GNU tools.
 3. GNU Make (>=4.2.1). Same as above.
 
 # Tests #
@@ -17,17 +37,12 @@ Your code will be tested against the scenarios in the `testcases` directory. For
 batch commands to your shell, the expected output is found on `echo_result.txt`.
 
 ## Autograder
-The autograder compiles the code in the `main` branch of your repository every morning Eastern Time, and then runs it against all the tests cases. 
+The autograder compiles the code in the `main` branch of your repository and then runs it against all the tests cases. 
 It will send an email report to the users that have a public email address in their GitLab profile.
 
-# Setup #
-### GitLab
-We will rely on gitlab and it is mandatory to use it for this coursework.
-GitLab is an online repository that can be used with the git control revision system.
-The CS department runs a GitLab hosting service, and all students should be able to access it with their CS account.
+This process happens every day. The autograder uses the version of the code found on your repo at 00:00am Montreal Time.
 
-Important: do not share your code and repository with anyone outside your group and keep your source code secret.
-If we identify that two groups have identical portion of code, both will be considered to have cheated.
+# Setup #
 
 ## 1. Setting a public email
 At least one member of each team needs to set a public email on their GitLab profile in order to receive the autograder reports.
