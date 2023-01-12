@@ -1,15 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
-
 #include "shellmemory.h"
 #include "shell.h"
 
 int MAX_ARGS_SIZE = 3;
 
+int badcommand(){
+	printf("%s\n", "Unknown Command");
+	return 1;
+}
+
+// For run command only
+int badcommandFileDoesNotExist(){
+	printf("%s\n", "Bad command: File not found");
+	return 3;
+}
+
 int help();
 int quit();
-int badcommand();
 int set(char* var, char* value);
 int print(char* var);
 int run(char* script);
@@ -22,7 +31,6 @@ int interpreter(char* command_args[], int args_size){
 	if ( args_size < 1 || args_size > MAX_ARGS_SIZE){
 		return badcommand();
 	}
-
 
 	for ( i=0; i<args_size; i++){ //strip spaces new line etc
 		command_args[i][strcspn(command_args[i], "\r\n")] = 0;
@@ -71,19 +79,7 @@ int quit(){
 	exit(0);
 }
 
-int badcommand(){
-	printf("%s\n", "Unknown Command");
-	return 1;
-}
-
-// For run command only
-int badcommandFileDoesNotExist(){
-	printf("%s\n", "Bad command: File not found");
-	return 3;
-}
-
 int set(char* var, char* value){
-
 	char *link = "=";
 	char buffer[1000];
 	strcpy(buffer, var);

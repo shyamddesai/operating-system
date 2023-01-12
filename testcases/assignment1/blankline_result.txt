@@ -6,4 +6,10 @@ COMMAND                 DESCRIPTION
  print VAR              Displays the STRING assigned to VAR
  run SCRIPT.TXT         Executes the file SCRIPT.TXT
  
-Variable does not exist
+Unknown Command
+Unknown Command
+1
+1
+Unknown Command
+Unknown Command
+Bye!

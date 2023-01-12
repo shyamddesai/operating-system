@@ -1,4 +1,4 @@
-Shell version 1.1 Created January 2022
+Shell version 1.2 Created January 2023
 COMMAND                 DESCRIPTION
  help                   Displays all the commands
  quit                   Exits / terminates the shell with “Bye!”
@@ -8,4 +8,4 @@ COMMAND                 DESCRIPTION
  
 Bad command: my_mkdir
 tata
-$ $ Bye!
+Bye!

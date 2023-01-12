@@ -6,4 +6,10 @@ COMMAND                 DESCRIPTION
  print VAR              Displays the STRING assigned to VAR
  run SCRIPT.TXT         Executes the file SCRIPT.TXT
  
-Variable does not exist
+Unknown Command
+Bad command: Too many tokens
+Bad command: File not found
+Bad command: my_mkdir
+Bad command: my_mkdir
+Bad command: my_cd
+Bye!

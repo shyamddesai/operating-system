@@ -1,4 +1,4 @@
-Shell version 1.1 Created January 2022
+Shell version 1.2 Created January 2023
 COMMAND                 DESCRIPTION
  help                   Displays all the commands
  quit                   Exits / terminates the shell with “Bye!”
@@ -6,6 +6,6 @@ COMMAND                 DESCRIPTION
  print VAR              Displays the STRING assigned to VAR
  run SCRIPT.TXT         Executes the file SCRIPT.TXT
  
-$ 123
+123
 abc
-$ Bye!
+Bye!

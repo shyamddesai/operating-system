@@ -1,0 +1,5 @@
+set a good
+run testcases/assignment1/batch.txt
+set a bad 
+run testcases/assignment1/batch.txt
+quit
