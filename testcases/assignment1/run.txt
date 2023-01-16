@@ -1,5 +1,4 @@
 set a good
-run testcases/assignment1/batch.txt
-set a bad 
-run testcases/assignment1/batch.txt
+print a
+run ../testcases/assignment1/set.txt
 quit
