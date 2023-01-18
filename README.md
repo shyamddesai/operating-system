@@ -84,3 +84,23 @@ $ git clone https://gitlab.cs.mcgill.ca/XXXXXXXX/comp310-winter23.git
 ```
 
 where XXXXXXX is the CS gitlab account id of the fork creator (as above), and you should be prompted to type in your CS gitlab account id and password.
+
+## 4. Keeping your fork updated
+This repository will be updated constantly, and your fork does not update automatically. You have to check this repo periodically and
+update your fork.
+
+This has to be done manually. To set this up, run:
+
+```
+git remote add upstream git@gitlab.cs.mcgill.ca:balmau/comp310-winter23.git
+git checkout main
+git pull upstream main # update local from original
+git push origin main # update fork in gitlab
+```
+
+Local Git repos can have multiple remotes. The default remote is `origin` which refers to your fork in GitLab. The commands above 
+add the `upstream` remote, which refers to the repo you forked.
+
+You can pull from `upstream` directly to update your local copy, and then you can push to your fork.
+
+Next time you do this, you only need to run the last 3 commands. Your local Git copy will remember the `upstream` remote.
