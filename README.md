@@ -42,6 +42,8 @@ It will send an email report to the users that have a public email address in th
 
 This process happens every day. The autograder uses the version of the code found on your repo at 00:00am Montreal Time.
 
+**Note:** Make sure you DO NOT change the `Makefile` nor the directory structure! If you do, the autograder may not be able to compile your code and will probably fail you.
+
 # Setup #
 
 ## 1. Setting a public email
