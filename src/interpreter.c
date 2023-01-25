@@ -4,10 +4,16 @@
 #include "shellmemory.h"
 #include "shell.h"
 
-int MAX_ARGS_SIZE = 3;
+int MAX_ARGS_SIZE = 7;
 
 int badcommand(){
 	printf("%s\n", "Unknown Command");
+	return 1;
+}
+
+//helper function to print too many tokens in set command
+int tooManyTokens(){
+	printf("%s\n", "Bad command: Too many tokens");
 	return 1;
 }
 
@@ -28,7 +34,8 @@ int badcommandFileDoesNotExist();
 int interpreter(char* command_args[], int args_size){
 	int i;
 
-	if ( args_size < 1 || args_size > MAX_ARGS_SIZE){
+	//if ( args_size < 1 || args_size > MAX_ARGS_SIZE){ //remove check for max arg size and deal with it manually instead
+	if ( args_size < 1){
 		return badcommand();
 	}
 
@@ -48,9 +55,24 @@ int interpreter(char* command_args[], int args_size){
 
 	} else if (strcmp(command_args[0], "set")==0) {
 		//set
-		if (args_size != 3) return badcommand();	
-		return set(command_args[1], command_args[2]);
-	
+		if (args_size < 3) return badcommand();
+		if(args_size > 7) return tooManyTokens();	
+
+		int token_size = 0;
+		for(int i=2; i<args_size; i++) {
+			token_size = token_size + strlen(command_args[i]) + 1; //+1 addresses the number of tokens for the spacing
+		}
+
+		char* tokens = (char*) malloc(sizeof(char)*token_size); //dynamic allocation based on user input; token_size + 1 due to NULL character
+
+		//concatenate all STRING/tokens into one
+		for (int i=2; i<args_size; i++) {
+			strcat(tokens, command_args[i]);
+			strcat(tokens, " ");
+		} tokens[strlen(tokens)] = '\0'; //replace last space character with NULL character
+
+		return set(command_args[1], tokens);
+
 	} else if (strcmp(command_args[0], "print")==0) {
 		if (args_size != 2) return badcommand();
 		return print(command_args[1]);
