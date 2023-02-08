@@ -1,0 +1,3 @@
+Bad command: same file name
+Bad command: same file name 
+Bye!
