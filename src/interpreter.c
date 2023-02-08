@@ -143,3 +143,65 @@ int run(char* script){
 
 	return errCode;
 }
+int create_directory(char* dirname) {
+    if (mkdir(dirname) == -1) {
+        printf("Error creating directory %s\n", dirname);
+		return -1;
+    } else {
+		mkdir(dirname);
+        printf("Directory %s created\n", dirname);
+		return 0;
+    }
+}
+
+int my_mkdir(char* dirname) {
+    if (dirname[0] == '$') {
+        char* env_var = getenv(dirname + 1);
+        if (env_var == NULL) {
+            printf("Bad command: my_mkdir\n");
+        } else {
+            create_directory(env_var);
+        }
+    } else {
+        create_directory(dirname);
+    }
+	return 0;
+}
+
+void my_ls() {
+  
+  int count, i;
+
+  count = 0;
+  while ((entry = readdir(dir))) {
+    entries[count++] = entry;
+  }
+  closedir(dir);
+
+  for (i = 0; i < count; i++) {
+    if (strcat(entries[i].d_name, &buf) == 0) {
+      if (S_ISDIR(buf.st_mode)) {
+        printf("%s/\n", entries[i].d_name);
+      } else {
+        printf("%s\n", entries[i].d_name);
+      }
+    }
+  }
+}
+
+void my_cd(const char *dirname) {
+  char *result = getenv("PWD");
+  if (result == NULL) {
+    perror("getenv");
+    return;
+  }
+  
+  char path[strlen(result) + strlen(dirname) + 2];
+  strcpy(path, result);
+  strcat(path, "/");
+  strcat(path, dirname);
+
+  if (chdir(path) != 0) {
+    printf("Bad command: my_cd\n");
+  }
+}
