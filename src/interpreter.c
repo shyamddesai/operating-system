@@ -15,13 +15,13 @@ int badcommand()
 int tooManyTokens()
 {
 	printf("%s\n", "Bad command: Too many tokens");
-	return 1;
+	return 2;
 }
 
 int badTokenNotAlphaNumeric()
 {
 	printf("%s\n", "Bad command: Token is not alphanumeric");
-	return 1;
+	return 4;
 }
 
 int isAlphaNumeric(char *var)
@@ -111,8 +111,8 @@ int interpreter(char *command_args[], int args_size)
 			return badcommand();
 		if (args_size > 7)
 			return tooManyTokens();
-		if (isAlphaNumeric(command_args[1]) == 1)
-			return 1;
+		if (isAlphaNumeric(command_args[1]) == 4)
+			return 4;
 		return set(command_args[1], concatenateTokens(command_args, args_size));
 	}
 	else if (strcmp(command_args[0], "print") == 0)
