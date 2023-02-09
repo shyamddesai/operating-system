@@ -185,20 +185,20 @@ int my_mkdir(char* dirname) {
 	
 	// Check if the variable exists in the shell memory
     // If the variable exists, create the directory using the value associated with it
-    
+    // if the directory already exists
+
 	if (mkdir(dirname, 0775)) {
 		printf("Error: Directory already exists\n");
 		return 1;
 	}
       
 	  if (is_alphanumeric(dirname) == 1) {
-		mkdir(dirname, 0775); 
-		printf("alphanumeric test passed\n");                             //find the pathway of the directory to do this	
+		mkdir(dirname, 0775);  
     }  
 	  else {
-        // If the value is not a single alphanumeric token, display an error message
         printf("did not pass the alphanumeric test\n");
 		}
+		//}
 		return 0;
     } 
 
@@ -226,13 +226,13 @@ int my_ls() {
 	//find a way to iterate through the directory
 	// add all the names of the directories in an array and sort that array*/
   int d = opendir(".");
-  
-  if (d) {
+  /*if (d) {
     while ((readdir(d)) != NULL) {
       printf("%s\n", d);
     }
     closedir(d);
-  }
+  }*/
+  printf("%s\n", d);
   return(0);  
 
 }
