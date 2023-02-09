@@ -80,6 +80,19 @@ int interpreter(char* command_args[], int args_size){
 	} else if (strcmp(command_args[0], "run")==0) {
 		if (args_size != 2) return badcommand();
 		return run(command_args[1]);
+
+	} else if (strcmp(command_args[0], "my_mkdir")==0) {
+		printf("%s\n", "Step 1");
+	//	if (args_size != 2) return badcommand();
+		return run(command_args[1]);
+
+	} else if (strcmp(command_args[0], "my_cd")==0) {
+		if (args_size != 2) return badcommand();
+		return run(command_args[1]);
+
+	} else if (strcmp(command_args[0], "my_ls")==0) {
+		if (args_size != 1) return badcommand();
+		return run(command_args[1]);
 	
 	} else return badcommand();
 }
@@ -111,7 +124,6 @@ int set(char* var, char* value){
 	mem_set_value(var, value);
 
 	return 0;
-
 }
 
 int print(char* var){
@@ -120,54 +132,75 @@ int print(char* var){
 }
 
 int run(char* script){
+	
 	int errCode = 0;
 	char line[1000];
-	FILE *p = fopen(script,"rt");  // the program is in a file
+	FILE *p = fopen(script, "rt"); // the program is in a file
 
-	if(p == NULL){
+	if (p == NULL)
+	{
 		return badcommandFileDoesNotExist();
 	}
 
-	fgets(line,999,p);
-	while(1){
-		errCode = parseInput(line);	// which calls interpreter()
+	fgets(line, 999, p);
+
+	while (1)
+	{
+		errCode = parseInput(line); // which calls interpreter()
 		memset(line, 0, sizeof(line));
 
-		if(feof(p)){
+		if (feof(p))
+		{
 			break;
 		}
-		fgets(line,999,p);
+		fgets(line, 999, p);
 	}
 
-    fclose(p);
+	fclose(p);
 
 	return errCode;
 }
-int create_directory(char* dirname) {
-    if (mkdir(dirname) == -1) {
-        printf("Error creating directory %s\n", dirname);
-		return -1;
-    } else {
-		mkdir(dirname);
-        printf("Directory %s created\n", dirname);
-		return 0;
+int is_alphanumeric(char* str) {
+  
+  int i;
+ 
+ //testing to see if the string is alphanumeric
+ //return 1 if it is, 0 if not alphanumeric
+
+ for (i = 0; i < strlen(str); i++) { 
+    if (isalnum(str[i])) {
+      return 1;
     }
+  }
+  return 0;
 }
 
 int my_mkdir(char* dirname) {
-    if (dirname[0] == '$') {
-        char* env_var = getenv(dirname + 1);
-        if (env_var == NULL) {
-            printf("Bad command: my_mkdir\n");
-        } else {
-            create_directory(env_var);
-        }
-    } else {
-        create_directory(dirname);
-    }
-	return 0;
-}
+  //if (dirname[0] == '$') {
+    
+    int i;
+	int newdirectory;
+	
+	// Check if the variable exists in the shell memory
+    // If the variable exists, create the directory using the value associated with it
+    
+	if (mkdir(dirname, 0775 == -1)) {
+		printf("Error: Directory already exists\n");
+		return 1;
+	}
+      
+	  if (is_alphanumeric(dirname) == 1) {
+		mkdir(dirname, 0775); 
+		printf("alphanumeric test passed\n");                             //find the pathway of the directory to do this	
+    }  
+	  else {
+        // If the value is not a single alphanumeric token, display an error message
+        printf("did not pass the alphanumeric test\n");
+		}
+		return 0;
+    } 
 
+/*
 void my_ls() {
   
   int count, i;
@@ -187,7 +220,8 @@ void my_ls() {
       }
     }
   }
-}
+}*/
+
 
 void my_cd(const char *dirname) {
   char *result = getenv("PWD");
