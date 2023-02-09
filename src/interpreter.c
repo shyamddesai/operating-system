@@ -136,9 +136,23 @@ int interpreter(char *command_args[], int args_size)
 		if (args_size != 2)
 			return badcommand();
 		return run(command_args[1]);
-	}
-	else
-		return badcommand();
+
+	} else if (strcmp(command_args[0], "my_mkdir")==0) {
+	    if (args_size != 2) return badcommand();
+		return my_mkdir(command_args[1]);
+
+	} else if (strcmp(command_args[0], "my_cd")==0) {
+		if (args_size != 2) return badcommand();
+		return my_cd(command_args[1]);
+
+	} else if (strcmp(command_args[0], "my_ls")==0) {
+		if (args_size != 1) return badcommand();
+		return my_ls();
+	} else if (strcmp(command_args[0], "my_touch")==0) {
+		if (args_size != 2) return badcommand();
+		return my_touch(command_args[1]);
+	
+	} else return badcommand();
 }
 
 int help()
@@ -202,14 +216,14 @@ int print(char *var)
 	return 0;
 }
 
-int run(char *script)
-{
+int run(char* script){
+	
 	int errCode = 0;
 	char line[1000];
 	FILE *p = fopen(script, "rt"); // the program is in a file
 
-	if (p == NULL)
-	{
+	if (p == NULL){
+		printf("P is null\n");
 		return badcommandFileDoesNotExist();
 	}
 
@@ -224,11 +238,107 @@ int run(char *script)
 		{
 			break;
 		}
-
 		fgets(line, 999, p);
 	}
 
 	fclose(p);
 
 	return errCode;
+}
+int is_alphanumeric(char* str) {
+  
+  int i;
+ 
+ //testing to see if the string is alphanumeric
+ //return 1 if it is, 0 if not alphanumeric
+
+ for (i = 0; i < strlen(str); i++) { 
+    if (str[i] < 123) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+int my_mkdir(char* dirname) {
+  //if (dirname[0] == '$') {
+    
+    int i;
+	int newdirectory;
+	
+	// Check if the variable exists in the shell memory
+    // If the variable exists, create the directory using the value associated with it
+    // if the directory already exists
+
+	if (mkdir(dirname, 0775)) {
+		printf("Error: Directory already exists\n");
+		return 1;
+	}
+      
+	  if (is_alphanumeric(dirname) == 1) {
+		mkdir(dirname, 0775);  
+    }  
+	  else {
+        printf("did not pass the alphanumeric test\n");
+		}
+		//}
+		return 0;
+    } 
+
+
+int my_ls() {
+/*  int count =0;
+  int i = 0;
+  int entries[100];
+  
+ // *mem_get_value(char *var_in);
+  
+  for (i; i < count; i++) {
+    if (entries[i].d_name) {
+        printf("%s/\n", entries[i].d_name);
+      }
+    }
+	//qsort() sort the list
+
+	for(k=0; k< count; k++);{
+		//print all of the elements in the list
+	}
+	return 0;
+
+	//add a sorting method
+	//find a way to iterate through the directory
+	// add all the names of the directories in an array and sort that array*/
+  int d = opendir(".");
+  /*if (d) {
+    while ((readdir(d)) != NULL) {
+      printf("%s\n", d);
+    }
+    closedir(d);
+  }*/
+  printf("%s\n", d);
+  return(0);  
+
+}
+
+//change this, some methods are not in this library
+int my_cd(const char *dirname) {
+  char *result = getenv("PWD");
+  if (result == NULL) {
+    perror("getenv");
+    return 1;
+  }
+  
+  char path[strlen(result) + strlen(dirname) + 2];
+  strcpy(path, result);
+  strcat(path, "/");
+  strcat(path, dirname);
+
+  if (chdir(path) != 0) {
+    printf("Bad command: my_cd\n");
+  }
+}
+
+int my_touch(char *filename){
+	int fd = creat(filename, 0666);
+	return 0;
 }

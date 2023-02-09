@@ -82,3 +82,4 @@ char *mem_get_value(char *var_in) {
 	return "Variable does not exist";
 
 }
+
