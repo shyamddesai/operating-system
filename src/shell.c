@@ -26,25 +26,20 @@ int main(int argc, char *argv[])
     mem_init();
     while (1)
     {
-        if (isatty(0))
+        if (isatty(0)) // returns 1 when file descriptor input refers to the keyboard
         {
             printf("%c ", prompt);
-            //printf("Input is from the keyboard\n");
         }
-        else
-        {
-            //printf("Input is from a file\n");
-        }
-        
-        while (fgets(userInput, MAX_USER_INPUT - 1, stdin) == NULL);
-        
+
+        while (fgets(userInput, MAX_USER_INPUT - 1, stdin) == NULL); // fgets returns NULL when reached EOF
+
         if (feof(stdin))
         {
-            freopen("/dev/tty","r",stdin);
-            //execvp(argv[0], (char *const *)argv);            
+            freopen("/dev/tty", "r", stdin); // when reached end of file, switch stream to the terminal
         }
         errorCode = parseInput(userInput);
-        if (errorCode == -1) exit(99); // ignore all other errors
+        if (errorCode == -1)
+            exit(99); // ignore all other errors
         memset(userInput, 0, sizeof(userInput));
     }
 
@@ -53,12 +48,6 @@ int main(int argc, char *argv[])
 
 int parseInput(char ui[])
 {
-
-    printf("ui: ");
-    for(int i=0; i<strlen(ui); i++) {
-        printf("%c", ui[i]);
-    } 
-
     char tmp[200];
     char *words[100];
     int a = 0;
@@ -81,12 +70,6 @@ int parseInput(char ui[])
             break;
         a++;
     }
-    
-    printf("w: %d, words: ", w);
-    for(int i=0; i<strlen(words); i++) {
-        printf("%s", words[i]);
-    } printf("\n");
-    
 
     errorCode = interpreter(words, w);
     return errorCode;

@@ -47,24 +47,28 @@ int badcommandFileDoesNotExist()
 	return 3;
 }
 
-char* concatenateTokens(char *command_args[], int args_size) {
-		int token_size = 0;
-		for (int i = 2; i < args_size; i++)
-		{
-			token_size = token_size + strlen(command_args[i]) + 1; //+1 addresses the number of tokens for the spacing
-		}
+char *concatenateTokens(char *command_args[], int args_size)
+{
 
-		char *tokens = (char *)malloc(sizeof(char) * token_size); // dynamic allocation based on user input; token_size + 1 due to NULL character
+	int token_size = 0;
+	for (int i = 2; i < args_size; i++)
+	{
+		token_size = token_size + strlen(command_args[i]) + 1; //+1 addresses the number of tokens for the spacing
+	}
 
-		// concatenate all STRING/tokens into one
-		for (int i = 2; i < args_size; i++)
-		{
-			strcat(tokens, command_args[i]);
-			strcat(tokens, " ");
-		}
-		tokens[strlen(tokens) - 1] = '\0'; // replace last space character with NULL character
+	char *tokens = (char *)malloc(sizeof(char) * token_size); // dynamic allocation based on user input; token_size + 1 due to NULL character
+	for (int i = 0; i < token_size; i++)
+		tokens[i] = '\0'; // reinitialize all values of tokens to NULL characters to prevent garbage values when exiting batch mode and entering interactive mode
 
-		return tokens;
+	// concatenate all STRING/tokens into one
+	for (int i = 2; i < args_size; i++)
+	{
+		strcat(tokens, command_args[i]);
+		strcat(tokens, " ");
+	}
+	tokens[strlen(tokens) - 1] = '\0'; // replace last space character with NULL character
+
+	return tokens;
 }
 
 int help();
@@ -163,7 +167,6 @@ int set(char *var, char *value)
 	strcpy(buffer, var);
 	strcat(buffer, link);
 	strcat(buffer, value);
-
 	mem_set_value(var, value);
 
 	return 0;
@@ -178,7 +181,8 @@ int echo(char *var)
 	else
 	{
 		char *value_to_echo = (char *)malloc(sizeof(char) * strlen(var));
-		for (int i = 1; i < strlen(var); i++) {
+		for (int i = 1; i < strlen(var); i++)
+		{
 			value_to_echo[i - 1] = var[i];
 		}
 		value_to_echo[strlen(var) - 1] = '\0';
