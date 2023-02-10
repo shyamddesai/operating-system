@@ -9,8 +9,7 @@ int MAX_USER_INPUT = 1000;
 int parseInput(char ui[]);
 
 // Start of everything
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     printf("%s\n", "Shell version 1.2 Created January 2023");
     help();
 
@@ -24,62 +23,42 @@ int main(int argc, char *argv[])
 
     // init shell memory
     mem_init();
-    while (1)
-    {
+    while (1) {
         if (isatty(0)) // returns 1 when file descriptor input refers to the keyboard
-        {
             printf("%c ", prompt);
-        }
 
-        while (fgets(userInput, MAX_USER_INPUT - 1, stdin) == NULL)
-            ; // fgets returns NULL when reached EOF
+        while (fgets(userInput, MAX_USER_INPUT - 1, stdin) == NULL); // fgets returns NULL when reached EOF
 
         if (feof(stdin))
-        {
             freopen("/dev/tty", "r", stdin); // when reached end of file, switch stream to the terminal
-        }
-
-        int count_letter = 0;
-        int row = 0;
-        int col = 0;
-
-        int entryflag = 0;
-        int i = 0;
-        int j = 0;
 
         char array_commands[10][1000];
-
-        for (i = 0; i < strlen(userInput); i++)
-        {
-            if (userInput[i] == ';')
-            {
-                entryflag = 1;
-                array_commands[row][col] = '\0';
-                row++;
-                col = 0;
+        int row = 0;
+        int col = 0;
+        int oneliner = 0;
+      
+        for (int i=0; i<strlen(userInput); i++) {
+            if (userInput[i] == ';') {
+                array_commands[row][col] = '\0'; //append NULL character at end of row
+                oneliner = 1; //change flag
+                row++; //move to next row
+                col = 0; //reset back to 0th index
                 i += 2; // skip ; and space characters
             }
-            array_commands[row][col++] = userInput[i]; // copy the command character by character and increment col
+            array_commands[row][col++] = userInput[i]; // copy the command, character by character and increment col
         }
 
-        if (entryflag == 0)
-        { // if not a one-liner, execute normally
+        if (oneliner == 0) { // if not a one-liner, execute normally
             errorCode = parseInput(userInput);
-            if (errorCode == -1)
-                exit(99); // ignore all other errors
+            if (errorCode == -1) exit(99); // ignore all other errors
             memset(userInput, 0, sizeof(userInput));
-        }
-        else
-        {
+        } else {
             array_commands[row][col - 1] = '\0'; // insert NULL character at the end of the last command
 
-            for (i = 0; i <= row; i++)
-            {
+            for (int i=0; i <= row; i++)
                 errorCode = parseInput(array_commands[i]);
-                if (errorCode == -1)
-                    exit(99); // ignore all other errors
+                if (errorCode == -1) exit(99); // ignore all other errors
                 memset(userInput, 0, sizeof(userInput));
-            }
         }
     }
 
