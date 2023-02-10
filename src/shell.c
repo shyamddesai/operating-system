@@ -31,16 +31,56 @@ int main(int argc, char *argv[])
             printf("%c ", prompt);
         }
 
-        while (fgets(userInput, MAX_USER_INPUT - 1, stdin) == NULL); // fgets returns NULL when reached EOF
+        while (fgets(userInput, MAX_USER_INPUT - 1, stdin) == NULL)
+            ; // fgets returns NULL when reached EOF
 
         if (feof(stdin))
         {
             freopen("/dev/tty", "r", stdin); // when reached end of file, switch stream to the terminal
         }
-        errorCode = parseInput(userInput);
-        if (errorCode == -1)
-            exit(99); // ignore all other errors
-        memset(userInput, 0, sizeof(userInput));
+
+        int count_letter = 0;
+        int row = 0;
+        int col = 0;
+
+        int entryflag = 0;
+        int i = 0;
+        int j = 0;
+
+        char array_commands[10][1000];
+
+        for (i = 0; i < strlen(userInput); i++)
+        {
+            if (userInput[i] == ';')
+            {
+                entryflag = 1;
+                array_commands[row][col] = '\0';
+                row++;
+                col = 0;
+                i += 2; // skip ; and space characters
+            }
+            array_commands[row][col++] = userInput[i]; // copy the command character by character and increment col
+        }
+
+        if (entryflag == 0)
+        { // if not a one-liner, execute normally
+            errorCode = parseInput(userInput);
+            if (errorCode == -1)
+                exit(99); // ignore all other errors
+            memset(userInput, 0, sizeof(userInput));
+        }
+        else
+        {
+            array_commands[row][col - 1] = '\0'; // insert NULL character at the end of the last command
+
+            for (i = 0; i <= row; i++)
+            {
+                errorCode = parseInput(array_commands[i]);
+                if (errorCode == -1)
+                    exit(99); // ignore all other errors
+                memset(userInput, 0, sizeof(userInput));
+            }
+        }
     }
 
     return 0;
