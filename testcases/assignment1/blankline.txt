@@ -3,4 +3,4 @@ set x 1
 
 print x; echo $x;
 
-quit;set y 1
+quit; set y 1
