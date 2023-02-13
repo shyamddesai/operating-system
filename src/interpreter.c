@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include "shellmemory.h"
 #include "shell.h"
+#include "pcb.h"
 
 int MAX_ARGS_SIZE = 7;
 
@@ -204,7 +205,10 @@ int run(char* script)	{
 	
 	int errCode = 0;
 	char line[1000];
+
 	FILE *p = fopen(script, "rt"); // the program is in a file
+
+	pcb_init();
 
 	if (p == NULL)	{
 		return badcommandFileDoesNotExist();
@@ -213,14 +217,21 @@ int run(char* script)	{
 	fgets(line, 999, p);
 
 	while (1) {
-		errCode = parseInput(line); // which calls interpreter()
-		memset(line, 0, sizeof(line));
+		//errCode = parseInput(line); // which calls interpreter()
+
+		//printf("p: %s\n", line);
+		pcb_set_script(line); //pass line to pcb
+		//pcb_set_value();
+		
+		//memset(line, 0, sizeof(line));
 
 		if (feof(p)) {
 			break;
 		}
 		fgets(line, 999, p);
 	}
+
+	print_script_commands();
 
 	fclose(p);
 
