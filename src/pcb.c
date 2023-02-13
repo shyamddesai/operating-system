@@ -10,9 +10,13 @@ struct pcb {
     int pid;
     int position;  //index of command
     int length; //# of commmands
-};
+} pcb_commands[1000];
 
-struct pcb pcb_commands[1000];
+struct queue {
+    int pid;
+    struct pcb *ptr;
+    struct queue *next;
+} pcb_queue;
 
 void pcb_init() {
 
@@ -55,10 +59,13 @@ void pcb_set_script(char script[]) {
 void print_script_commands() {
     for (int i=0; i<1000; i++){
         if (pcb_commands[i].pid != 0) {
-            printf("LENGTH: %d\n", pcb_commands[i].length);
-            printf("POSITION: %d\n", pcb_commands[i].position);
+            //printf("LENGTH: %d\n", pcb_commands[i].length);
+            //printf("POSITION: %d\n", pcb_commands[i].position);
             
-            printf("value: %s\n", script_commands[pcb_commands[i].position]);
+            //printf("value: %s\n", script_commands[pcb_commands[i].position]);
+
+            int errCode = 0;
+            errCode = parseInput(script_commands[pcb_commands[i].position]); // which calls interpreter()
 
             // for (int j=0; j<pcb_commands[i].length; j++) {
             //     printf("%s\n", script_commands[pcb_commands[i].position][j]);
