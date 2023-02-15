@@ -231,7 +231,10 @@ int run(char* script)	{
 		fgets(line, 999, p);
 	}
 
-	print_script_commands();
+	insert_queue();
+	display_queue();
+	cleanup();
+	//print_script_commands();
 
 	fclose(p);
 

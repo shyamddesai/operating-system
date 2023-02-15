@@ -18,6 +18,71 @@ struct queue {
     struct queue *next;
 } pcb_queue;
 
+struct queue *ptr_queue = NULL;
+struct queue *front = NULL;
+struct queue *rear = NULL;
+
+void insert_queue() {
+
+    int i=0;
+
+    while(i < row) {
+        ptr_queue = (struct queue *)malloc(sizeof(struct queue));
+
+        ptr_queue->pid = pcb_commands[i].pid;
+        ptr_queue->ptr = &pcb_commands[i];
+        ptr_queue->next = NULL;
+
+        if(front == NULL) { //if linked list is empty
+            front = ptr_queue;
+            rear = ptr_queue;
+        } else {
+            rear->next = ptr_queue;
+            rear = ptr_queue;
+        }
+
+        //printf("i: %d\n", i);
+        i++;
+    }
+}
+
+void display_queue() {
+    
+    if(front == NULL) {
+        printf("QUEUE EMPTY\n");
+    } else {
+        ptr_queue = front;
+        
+        while(ptr_queue != NULL) {
+            //printf("PID: %d\n", ptr_queue->pid);
+             
+            int errCode = 0;
+            errCode = parseInput(script_commands[ptr_queue->ptr->position]); // which calls interpreter()
+            
+            //printf("Command Name: %s\n", script_commands[ptr_queue->ptr->position]);
+            ptr_queue = ptr_queue->next;
+        }
+    }
+}
+
+void cleanup() {
+    if(front == NULL) {
+        printf("NO ELEMENTS\n");
+    } else {
+        for(int i=0; i<row; i++) {
+            ptr_queue = front;
+            front = front->next;
+            free(ptr_queue);
+        }
+        pcb_init(); //clear pcb_commands
+        mem_init();
+
+        for(int i=0; i<row; i++) {
+            script_commands[i][0] = NULL;
+        }
+    }
+}
+
 void pcb_init() {
 
     for (int i=0; i<1000; i++) {    

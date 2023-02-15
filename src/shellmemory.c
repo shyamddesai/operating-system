@@ -2,7 +2,6 @@
 #include<string.h>
 #include<stdio.h>
 
-
 struct memory_struct{
 	char *var;
 	char *value;
