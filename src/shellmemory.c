@@ -36,7 +36,6 @@ char *extract(char *model) {
 // Shell memory functions
 
 void mem_init(){
-
 	int i;
 	for (i=0; i<1000; i++){		
 		shellmemory[i].var = "none";
@@ -46,9 +45,7 @@ void mem_init(){
 
 // Set key value pair
 void mem_set_value(char *var_in, char *value_in) {
-	
 	int i;
-
 	for (i=0; i<1000; i++){
 		if (strcmp(shellmemory[i].var, var_in) == 0){
 			shellmemory[i].value = strdup(value_in);
@@ -72,13 +69,11 @@ void mem_set_value(char *var_in, char *value_in) {
 //get value based on input key
 char *mem_get_value(char *var_in) {
 	int i;
-
 	for (i=0; i<1000; i++){
 		if (strcmp(shellmemory[i].var, var_in) == 0){
-
 			return strdup(shellmemory[i].value);
 		} 
 	}
-	return "Variable does not exist";
+	return NULL;
 
 }
