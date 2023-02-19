@@ -74,6 +74,7 @@ int set(char *var, char *value);
 int echo(char *var);
 int print(char *var);
 int run(char *script);
+int exec(char prog[], int length);
 int my_mkdir(char* dirname);
 int my_ls();
 int my_cd(const char *dirname);
@@ -145,7 +146,27 @@ int interpreter(char *command_args[], int args_size) {
 		//my_touch
 		if (args_size != 2) return badcommand();
 		return my_touch(command_args[1]);
-	
+	} else if (strcmp(command_args[0], "exec") == 0) {
+		//exec
+		if (args_size < 3) return badcommand();
+		if (args_size > 5) return tooManyTokens();
+
+		//printf("args size: %d\n", args_size);
+		char programs[1000]; //row = args_size-1 excluding exec 
+		programs[0] = '\0';
+		int len=0;
+		
+		for(int i=1; i<args_size; i++) {
+			len += strlen(command_args[i]);
+			len++; //increase len for spaces
+			strcat(programs, command_args[i]); //copy the number of programs and policy
+			strcat(programs," ");
+		}
+
+		programs[len-1] = '\0'; //append last space with NULL
+
+		return exec (programs, args_size-1);
+
 	} else return badcommand();
 }
 
@@ -207,27 +228,16 @@ int run(char* script)	{
 	char line[1000];
 
 	FILE *p = fopen(script, "rt"); // the program is in a file
+	if (p == NULL) return badcommandFileDoesNotExist();
 
 	pcb_init();
-
-	if (p == NULL)	{
-		return badcommandFileDoesNotExist();
-	}
-
 	fgets(line, 999, p);
 
 	while (1) {
-		//errCode = parseInput(line); // which calls interpreter()
-
 		//printf("p: %s\n", line);
 		pcb_set_script(line); //pass line to pcb
-		//pcb_set_value();
 		
-		//memset(line, 0, sizeof(line));
-
-		if (feof(p)) {
-			break;
-		}
+		if (feof(p)) break;
 		fgets(line, 999, p);
 	}
 
@@ -240,6 +250,57 @@ int run(char* script)	{
 
 	return errCode;
 }
+
+int exec(char prog[], int length) {
+	//printf("length: %d, --%s--\n", strlen(prog), prog);
+	
+	char programs[length][1000];
+	int row = 0;
+	int col = 0;
+
+	for (int i=0; i<strlen(prog); i++) {
+		if(prog[i] == ' ') {
+			programs[row][col] = '\0';
+			row++;
+			col = 0;
+		} else {
+			programs[row][col++] = prog[i];
+		}
+	}
+
+	for(int i=0; i<row; i++) { //ignore policy while iterating
+		printf("--%s--\n", programs[i]);
+		
+		int errCode = 0;
+		char line[1000];
+
+		for(int i=0; i<1000; i++) {
+			line[i] = '\0';
+		}
+
+		FILE *p = fopen(programs[i], "rt"); // the program is in a file
+		if (p == NULL)	return badcommandFileDoesNotExist();
+
+		pcb_init();
+		fgets(line, 999, p);
+
+		while (1) {
+			pcb_set_script(line); //pass line to pcb
+
+			if (feof(p)) break;
+			fgets(line, 999, p);
+		}
+
+		insert_queue();
+		display_queue();
+		cleanup();
+
+		fclose(p);
+	}
+
+	return 0;
+}
+
 int is_alphanumeric(char* str) {
 
  //testing to see if the string is alphanumeric
@@ -291,7 +352,6 @@ int my_mkdir(char* dirname) {
 
 	return 0;
 } 
-
 
 int my_ls() {
 
