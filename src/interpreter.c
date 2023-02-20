@@ -253,21 +253,73 @@ int run(char* script)	{
 
 int exec(char prog[], int length) {
 	//printf("length: %d, --%s--\n", strlen(prog), prog);
-	
+	//printf("prog(len): %s\n", prog);
+
 	char programs[length][1000];
 	int row = 0;
 	int col = 0;
 
 	for (int i=0; i<strlen(prog); i++) {
 		if(prog[i] == ' ') {
-			programs[row][col] = '\0';
+			programs[row][col] = '\0'; //append NULL character to end of each row
 			row++;
 			col = 0;
 		} else {
 			programs[row][col++] = prog[i];
 		}
 	}
+	programs[row][col] = '\0'; //append NULL character to end of last row
 
+	int length_Files[row]; //store length of each file
+	for(int i=0; i<row; i++) length_Files[i] = 0; //initialize length to 0
+
+	for(int i=0; i<row; i++) {
+		//printf("--%s--\n", programs[i]);
+		
+		int errCode = 0;
+		char line[1000];
+
+		for(int j=0; j<1000; j++) {
+			line[j] = '\0';
+		} 
+
+		FILE *p = fopen(programs[i], "rt"); // the program is in a file
+		if (p == NULL)	return badcommandFileDoesNotExist();
+
+		pcb_init();
+		fgets(line, 999, p);
+		length_Files[i]++; //increment length of each file
+
+		while (1) {
+			if (feof(p)) break;
+			fgets(line, 999, p);
+			length_Files[i]++;
+		}
+		
+		fclose(p);
+	}
+
+	//Shortest Job First: swap contents and length of files into ascending order
+	if(strcmp(programs[row], "SJF") == 0) {
+		for(int i=0; i<row; i++) {
+			for(int j=0; j<row-i-1; j++) {
+				if(length_Files[j] > length_Files[j+1]) {
+					char tempFiles[1000];
+					strcpy(tempFiles, programs[j]);
+					strcpy(programs[j], programs[j+1]);
+					strcpy(programs[j+1], tempFiles);
+					
+					int tempLength = length_Files[j];
+					length_Files[j] = length_Files[j+1];
+					length_Files[j+1] = tempLength;
+				}
+			}
+		}
+	}
+
+	//for(int i=0; i<row; i++) printf("len: %d, file: %s, i = %d\n", length_Files[i], programs[i], i);
+
+	//pass lines of code FCFS (even after sorting for SJF)
 	for(int i=0; i<row; i++) { //ignore policy while iterating
 		printf("--%s--\n", programs[i]);
 		
