@@ -194,7 +194,6 @@ int set(char *var, char *value)	{
 	strcat(buffer, link);
 	strcat(buffer, value);
 	mem_set_value(var, value);
-
 	return 0;
 }
 

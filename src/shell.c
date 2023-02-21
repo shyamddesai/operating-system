@@ -5,10 +5,10 @@
 #include "interpreter.h"
 #include "shellmemory.h"
 
+
 int MAX_USER_INPUT = 1000;
 int parseInput(char ui[]);
 
-// Start of everything
 int main(int argc, char *argv[]) {
     printf("%s\n", "Shell version 1.2 Created January 2023");
     help();
