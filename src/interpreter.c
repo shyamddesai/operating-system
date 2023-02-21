@@ -253,49 +253,183 @@ int run(char* script)	{
 
 int exec(char prog[], int length) {
 	//printf("length: %d, --%s--\n", strlen(prog), prog);
-	
+	//printf("prog(len): %s\n", prog);
+
 	char programs[length][1000];
 	int row = 0;
 	int col = 0;
 
 	for (int i=0; i<strlen(prog); i++) {
 		if(prog[i] == ' ') {
-			programs[row][col] = '\0';
+			programs[row][col] = '\0'; //append NULL character to end of each row
 			row++;
 			col = 0;
 		} else {
 			programs[row][col++] = prog[i];
 		}
 	}
+	programs[row][col] = '\0'; //append NULL character to end of last row
 
-	for(int i=0; i<row; i++) { //ignore policy while iterating
-		printf("--%s--\n", programs[i]);
+	int length_Files[row]; //store length of each file
+	for(int i=0; i<row; i++) length_Files[i] = 0; //initialize length to 0
+
+	for(int i=0; i<row; i++) {
+		//printf("--%s--\n", programs[i]);
 		
 		int errCode = 0;
 		char line[1000];
 
-		for(int i=0; i<1000; i++) {
-			line[i] = '\0';
-		}
+		for(int j=0; j<1000; j++) {
+			line[j] = '\0';
+		} 
 
 		FILE *p = fopen(programs[i], "rt"); // the program is in a file
 		if (p == NULL)	return badcommandFileDoesNotExist();
 
 		pcb_init();
 		fgets(line, 999, p);
+		length_Files[i]++; //increment length of each file
 
 		while (1) {
-			pcb_set_script(line); //pass line to pcb
-
 			if (feof(p)) break;
 			fgets(line, 999, p);
+			length_Files[i]++;
+		}
+		
+		fclose(p);
+	}
+
+	if(strcmp(programs[row], "RR") == 0) { //Round Robin: execute two instructions per file
+		int positions[row]; //holds indices of instructions needed for all files
+		int counter=0; //index
+		int file1=0;
+		int file2=0;
+		int file3=0;
+		int i=0;
+		int errCode = 0;
+		char line[1000];
+		FILE *p[row]; 
+
+		for(int j=0; j<1000; j++) {
+			line[j] = '\0';
+		}
+	
+		for(int j=0; j<row; j++) {
+			p[j] = fopen(programs[j], "rt"); //open upto 3 file pointers
+			if (p[j] == NULL)	return badcommandFileDoesNotExist();
+		}
+
+		pcb_init();
+
+		while(1) {
+			switch (i) { //check 0th index
+				case 0:
+					for(int j=0; j<2; j++) { //check if two instructions exist in file
+						if((length_Files[i]-file1)>0 && counter<row) { //check if lines left to execute, check if right number of files				
+							if (feof(p[i])) break;
+							fgets(line, 999, p[i]);
+							pcb_set_script(line); //pass line to pcb
+							
+							file1++;
+						}
+					} 
+					break;
+				
+				case 1:
+					for(int j=0; j<2; j++) {
+						if((length_Files[i]-file2)>0 && counter<row) { //check if lines left to execute, check if right number of files				
+							if (feof(p[i])) break;
+							fgets(line, 999, p[i]);
+							pcb_set_script(line); //pass line to pcb
+							
+							file2++;
+						}
+					} 
+					break;
+
+				case 2:
+					for(int j=0; j<2; j++) {
+						if((length_Files[i]-file3)>0 && counter<row) { //check if lines left to execute, check if right number of files				
+							if (feof(p[i])) break;
+							fgets(line, 999, p[i]);
+							pcb_set_script(line); //pass line to pcb
+							
+							file3++;
+						}
+					} 
+					break;
+			}
+
+			i++;
+			if(i>2) i=0; //restart from 0
+
+			int flag = 0;
+			for(int j=0; j<row; j++) {
+				if(!feof(p[j])) flag = 1;
+			}
+			
+			if(flag == 0) break;
 		}
 
 		insert_queue();
 		display_queue();
 		cleanup();
 
-		fclose(p);
+		for(int j=0; j<row; j++) fclose(p[j]);
+
+	}
+
+	if(strcmp(programs[row], "FCFS") == 0 || strcmp(programs[row], "SJF") == 0) {
+		//Shortest Job First: swap contents and length of files into ascending order
+		if(strcmp(programs[row], "SJF") == 0) {
+			for(int i=0; i<row; i++) {
+				for(int j=0; j<row-i-1; j++) {
+					if(length_Files[j] > length_Files[j+1]) {
+						char tempFiles[1000];
+						strcpy(tempFiles, programs[j]);
+						strcpy(programs[j], programs[j+1]);
+						strcpy(programs[j+1], tempFiles);
+						
+						int tempLength = length_Files[j];
+						length_Files[j] = length_Files[j+1];
+						length_Files[j+1] = tempLength;
+					}
+				}
+			}
+		}
+
+		//for(int i=0; i<row; i++) printf("len: %d, file: %s, i = %d\n", length_Files[i], programs[i], i);
+
+		//pass lines of code FCFS (even after sorting for SJF)
+		for(int i=0; i<row; i++) { //ignore policy while iterating
+			//printf("--%s--\n", programs[i]);
+			
+			int errCode = 0;
+			char line[1000];
+
+			for(int i=0; i<1000; i++) {
+				line[i] = '\0';
+			}
+
+			FILE *p = fopen(programs[i], "rt"); // the program is in a file
+			if (p == NULL)	return badcommandFileDoesNotExist();
+
+			pcb_init();
+			fgets(line, 999, p);
+
+			while (1) {
+				pcb_set_script(line); //pass line to pcb
+
+				if (feof(p)) break;
+				fgets(line, 999, p);
+			}
+
+			insert_queue();
+			display_queue();
+			cleanup();
+
+			fclose(p);
+		}
 	}
 
 	return 0;
