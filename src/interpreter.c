@@ -431,6 +431,59 @@ int exec(char prog[], int length) {
 		}
 	}
 
+	if(strcmp(programs[row], "AGING") == 0) {
+
+		struct queue {
+			char fileName[1000];
+			int length;
+		} aging_queue[row];
+
+		int toBeProcessed[row];
+		FILE *p[row];
+		char line[1000];
+
+		for(int j=0; j<1000; j++)	line[j] = '\0';
+
+		//sort ready queue based off number of lines left after aging
+		for(int i=0; i<row; i++) {
+			for(int j=0; j<row-i-1; j++) {
+				if(length_Files[j] > length_Files[j+1]) {
+					char tempFiles[1000];
+					strcpy(tempFiles, programs[j]);
+					strcpy(programs[j], programs[j+1]);
+					strcpy(programs[j+1], tempFiles);
+					
+					int tempLength = length_Files[j];
+					length_Files[j] = length_Files[j+1];
+					length_Files[j+1] = tempLength;
+				}
+			}
+		}
+
+		for(int i=0; i<row; i++) {
+			strcpy(aging_queue[i].fileName, programs[i]);
+			aging_queue[i].length = length_Files[i];
+		}
+
+		for(int i=0; i<row; i++) {
+			toBeProcessed[i] = aging_queue[i].length;
+			printf("name: %s, length: %d\n", aging_queue[i].fileName, aging_queue[i].length);
+		}
+
+		for(int j=0; j<row; j++) {
+			p[j] = fopen(aging_queue[j].fileName, "rt"); //open upto 3 file pointers
+			if (p[j] == NULL)	return badcommandFileDoesNotExist();
+		}
+
+		while(1) {
+			if((toBeProcessed[0]-aging_queue[0].length)>0) { //process only the head of the queue
+				if (feof(p[0])) break;
+				fgets(line, 999, p[0]);
+				pcb_set_script(line);
+			}
+		}
+	}
+
 	return 0;
 }
 
