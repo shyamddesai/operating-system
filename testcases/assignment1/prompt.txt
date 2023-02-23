@@ -1,4 +1,0 @@
-set x 1
-set x 10 10 10
-set y good
-quit
