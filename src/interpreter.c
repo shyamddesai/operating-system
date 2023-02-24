@@ -431,6 +431,118 @@ int exec(char prog[], int length) {
 		}
 	}
 
+	if(strcmp(programs[row], "AGING") == 0) {
+
+		struct queue {
+			char fileName[1000];
+			int length;
+		} aging_queue[row];//third array
+
+		int toBeProcessed[row]; //first array
+		FILE *p[row]; //second array
+		char line[1000];
+		int matchrow = row;
+		
+		for(int j=0; j<1000; j++) line[j] = '\0';
+
+		//initiate aging_queue array struct with file names and length
+		for(int i=0; i<row; i++) {
+			strcpy(aging_queue[i].fileName, programs[i]);
+			aging_queue[i].length = length_Files[i];
+		}
+
+		//initate the file pointers
+		for(int j=0; j<row; j++) {
+			p[j] = fopen(aging_queue[j].fileName, "rt"); //open upto 3 file pointers
+			if (p[j] == NULL)	return badcommandFileDoesNotExist();
+		}
+
+		while(1) {
+			//sort ready queue based off number of lines left after aging
+			for(int i=0; i<row; i++) {
+				for(int j=0; j<row-i-1; j++) {
+					if(length_Files[j] > length_Files[j+1]) {
+						char tempFiles[1000];
+						strcpy(tempFiles, programs[j]);
+						strcpy(programs[j], programs[j+1]);
+						strcpy(programs[j+1], tempFiles);
+						
+						//swap length of files
+						int tempLength = length_Files[j];
+						length_Files[j] = length_Files[j+1];
+						length_Files[j+1] = tempLength;
+
+						//swap files in the queue based on priority
+						struct queue temp_queue = aging_queue[j];
+						aging_queue[j] = aging_queue[j+1];
+						aging_queue[j+1] = temp_queue;
+
+						//swap file pointers
+						FILE *temp_pointer = p[j];
+						p[j] = p[j+1];
+						p[j+1] = temp_pointer;
+					}
+				}
+			}
+
+			if (feof(p[0])) matchrow--;
+			if(matchrow <= 0) break; //when all commands are executed, leave loop
+
+			fgets(line, 999, p[0]);
+			pcb_set_script(line);
+
+			//printf("\n\nHEAD: %s, line: %s", aging_queue[0].fileName, line);
+			printf("%s\n", line);
+			//decrement length of the other files not at head
+			for(int l=1; l<row; l++) {
+				length_Files[l]--;
+				//printf("file: %s\n", aging_queue[l].fileName);
+			}
+		}
+
+		//sort ready queue based off number of lines left after aging
+		// for(int i=0; i<row; i++) {
+		// 	for(int j=0; j<row-i-1; j++) {
+		// 		if(length_Files[j] > length_Files[j+1]) {
+		// 			char tempFiles[1000];
+		// 			strcpy(tempFiles, programs[j]);
+		// 			strcpy(programs[j], programs[j+1]);
+		// 			strcpy(programs[j+1], tempFiles);
+					
+		// 			int tempLength = length_Files[j];
+		// 			length_Files[j] = length_Files[j+1];
+		// 			length_Files[j+1] = tempLength;
+		// 		}
+		// 	}
+		// }
+
+		// for(int i=0; i<row; i++) {
+		// 	strcpy(aging_queue[i].fileName, programs[i]);
+		// 	aging_queue[i].length = length_Files[i];
+		// }
+
+		// for(int i=0; i<row; i++) {
+		// 	toBeProcessed[i] = aging_queue[i].length;
+		// 	printf("name: %s, length: %d\n", aging_queue[i].fileName, aging_queue[i].length);
+		// }
+
+		// for(int j=0; j<row; j++) {
+		// 	p[j] = fopen(aging_queue[j].fileName, "rt"); //open upto 3 file pointers
+		// 	if (p[j] == NULL)	return badcommandFileDoesNotExist();
+		// }
+
+		// while(1) {
+			
+
+		// 	if((toBeProcessed[0]-aging_queue[0].length)>0) { //process only the head of the queue
+				
+		// 		if (feof(p[0])) break;
+		// 		fgets(line, 999, p[0]);
+		// 		pcb_set_script(line);
+		// 	}
+		// }
+	}
+
 	return 0;
 }
 
