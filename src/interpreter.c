@@ -151,7 +151,7 @@ int interpreter(char *command_args[], int args_size) {
 		if (args_size < 3) return badcommand();
 		if (args_size > 5) return tooManyTokens();
 
-		//printf("args size: %d\n", args_size);
+		//printf("EXEC: args size: %d\n", args_size);
 		char programs[1000]; //row = args_size-1 excluding exec 
 		programs[0] = '\0';
 		int len=0;
@@ -257,6 +257,7 @@ int exec(char prog[], int length) {
 	char programs[length][1000];
 	int row = 0;
 	int col = 0;
+	int backgroundFlag = 0;
 
 	for (int i=0; i<strlen(prog); i++) {
 		if(prog[i] == ' ') {
@@ -268,6 +269,11 @@ int exec(char prog[], int length) {
 		}
 	}
 	programs[row][col] = '\0'; //append NULL character to end of last row
+
+	if(strcmp(programs[row], "#") == 0) {
+		backgroundFlag = 1;
+		row --; //ignore the # in the programs to keep the implementation of RR the same
+	}
 
 	int length_Files[row]; //store length of each file
 	for(int i=0; i<row; i++) length_Files[i] = 0; //initialize length to 0
@@ -298,7 +304,7 @@ int exec(char prog[], int length) {
 		fclose(p);
 	}
 
-	if(strcmp(programs[row], "RR") == 0) { //Round Robin: execute two instructions per file
+	if(strcmp(programs[row], "RR") == 0 || strcmp(programs[row], "RR30") == 0) { //Round Robin: execute two instructions per file
 		int positions[row]; //holds indices of instructions needed for all files
 		int counter=0; //index
 		int file1=0;
@@ -306,8 +312,12 @@ int exec(char prog[], int length) {
 		int file3=0;
 		int i=0;
 		int errCode = 0;
+		int extendedRR = 2;
+
 		char line[1000];
 		FILE *p[row]; 
+
+		if(strcmp(programs[row], "RR30") == 0) extendedRR = 30;
 
 		for(int j=0; j<1000; j++) {
 			line[j] = '\0';
@@ -323,7 +333,7 @@ int exec(char prog[], int length) {
 		while(1) {
 			switch (i) { //check 0th index
 				case 0:
-					for(int j=0; j<2; j++) { //check if two instructions exist in file
+					for(int j=0; j<extendedRR; j++) { //check if two instructions exist in file
 						if((length_Files[i]-file1)>0 && counter<row) { //check if lines left to execute, check if right number of files				
 							if (feof(p[i])) break;
 							fgets(line, 999, p[i]);
@@ -335,7 +345,7 @@ int exec(char prog[], int length) {
 					break;
 				
 				case 1:
-					for(int j=0; j<2; j++) {
+					for(int j=0; j<extendedRR; j++) {
 						if((length_Files[i]-file2)>0 && counter<row) { //check if lines left to execute, check if right number of files				
 							if (feof(p[i])) break;
 							fgets(line, 999, p[i]);
@@ -347,7 +357,7 @@ int exec(char prog[], int length) {
 					break;
 
 				case 2:
-					for(int j=0; j<2; j++) {
+					for(int j=0; j<extendedRR; j++) {
 						if((length_Files[i]-file3)>0 && counter<row) { //check if lines left to execute, check if right number of files				
 							if (feof(p[i])) break;
 							fgets(line, 999, p[i]);
@@ -375,7 +385,6 @@ int exec(char prog[], int length) {
 		cleanup();
 
 		for(int j=0; j<row; j++) fclose(p[j]);
-
 	}
 
 	if(strcmp(programs[row], "FCFS") == 0 || strcmp(programs[row], "SJF") == 0) {
