@@ -1,0 +1,17 @@
+Shell version 1.2 Created January 2023
+
+Frame Store Size = 18; Variable Store Size = 10
+P4L1
+P4L2
+P5L1
+P5L2
+P6L1
+P6L2
+P4L3
+P4L4
+P5L3
+P5L4
+P6L3
+P6L4
+P5L5
+Bye!

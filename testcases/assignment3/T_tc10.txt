@@ -1,0 +1,2 @@
+run P_program20
+quit

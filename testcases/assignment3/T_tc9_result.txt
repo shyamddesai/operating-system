@@ -1,0 +1,96 @@
+Shell version 1.2 Created January 2023
+
+Frame Store Size = 18; Variable Store Size = 10
+P10L1
+P10L2
+P11L1
+P11L2
+P12L1
+P12L2
+P10L3
+P10L4
+P11L3
+P11L4
+P12L3
+P12L4
+P10L5
+P10L6
+P11L5
+P11L6
+P12L5
+P12L6
+Page fault! Victim page contents:
+
+echo P10L1
+echo P10L2
+echo P10L3
+
+End of victim page contents.
+Page fault! Victim page contents:
+
+echo P11L1
+echo P11L2
+echo P11L3
+
+End of victim page contents.
+Page fault! Victim page contents:
+
+echo P12L1
+echo P12L2
+echo P12L3
+
+End of victim page contents.
+P10L7
+P10L8
+P11L7
+P11L8
+P12L7
+P12L8
+P10L9
+Page fault! Victim page contents:
+
+echo P10L4
+echo P10L5
+echo P10L6
+
+End of victim page contents.
+P11L9
+Page fault! Victim page contents:
+
+echo P11L4
+echo P11L5
+echo P11L6
+
+End of victim page contents.
+P12L9
+Page fault! Victim page contents:
+
+echo P12L4
+echo P12L5
+echo P12L6
+
+End of victim page contents.
+P10L10
+P11L10
+P11L11
+P12L10
+P12L11
+P11L12
+Page fault! Victim page contents:
+
+echo P10L7
+echo P10L8
+echo P10L9
+
+End of victim page contents.
+P12L12
+Page fault! Victim page contents:
+
+echo P11L7
+echo P11L8
+echo P11L9
+
+End of victim page contents.
+P11L13
+P12L13
+Bye!
