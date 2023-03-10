@@ -4,7 +4,7 @@
 #include "shellmemory.h"
 #include "shell.h"
 
-char script_commands[100][1000]; //static allocation for 3 files for upto 100 commands
+char script_commands[1000][1000]; //static allocation for 3 files for upto 1000 commands
 int row=0;
 int col=0;
 
@@ -35,6 +35,8 @@ void pcb_init() {
 
 void pcb_set_value(int address, int length) {
     
+    //printf("HERE\n");
+
     for (int i=0; i<1000; i++){
         if (pcb_commands[i].pid == 0) {
             pcb_commands[i].pid = i+1; //increment unique pid
@@ -57,10 +59,12 @@ void pcb_set_value(int address, int length) {
 }
 
 void pcb_set_script(char script[]) {
+    //printf("script: %s\n", script);
 
     col = 0;
 
     for (int i=0; i<strlen(script); i++) {
+        //printf("i: %d\n", i);
         if (script[i] == ';') { //handles one liners
             script_commands[row][col] = '\0'; //append NULL character at end of row
             row++; //move to next row
@@ -73,7 +77,7 @@ void pcb_set_script(char script[]) {
     }
 
         script_commands[row][col] = '\0'; //append NULl character instead of \n to the end of last command
-        //printf("row: %s, row #: %d\n", script_commands[row], row);
+        //printf("row: %s, row #: %d, col: %d\n", script_commands[row], row, col);
 
         // for(int i=0; i<row; i++) {
         //     for(int j=0; j<col; j++) {

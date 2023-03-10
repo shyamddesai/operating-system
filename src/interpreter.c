@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <pthread.h>
 #include "shellmemory.h"
 #include "shell.h"
 #include "pcb.h"
@@ -75,7 +76,7 @@ int echo(char *var);
 int print(char *var);
 int run(char *script);
 int exec(char prog[], int length);
-int my_mkdir(char* dirname);
+//int my_mkdir(char* dirname);
 int my_ls();
 int my_cd(const char *dirname);
 int my_touch(char *filename);
@@ -89,6 +90,7 @@ int interpreter(char *command_args[], int args_size) {
 	}
 
 	if(args_size > MAX_ARGS_SIZE) {
+		
 		return tooManyTokens();
 	}
 
@@ -133,7 +135,7 @@ int interpreter(char *command_args[], int args_size) {
 	} else if (strcmp(command_args[0], "my_mkdir") == 0) {
 		//my_mkdir
 	    if (args_size != 2) return badcommand();
-		return my_mkdir(command_args[1]);
+		//return my_mkdir(command_args[1]);
 	} else if (strcmp(command_args[0], "my_cd") == 0) {
 		//my_cd
 		if (args_size != 2) return badcommand();
@@ -149,9 +151,9 @@ int interpreter(char *command_args[], int args_size) {
 	} else if (strcmp(command_args[0], "exec") == 0) {
 		//exec
 		if (args_size < 3) return badcommand();
-		if (args_size > 5) return tooManyTokens();
+		if (args_size > 7) return tooManyTokens(); //increased for # and MT
 
-		//printf("EXEC: args size: %d\n", args_size);
+		//printf("args size: %d\n", args_size);
 		char programs[1000]; //row = args_size-1 excluding exec 
 		programs[0] = '\0';
 		int len=0;
@@ -235,7 +237,6 @@ int run(char* script)	{
 	while (1) {
 		//printf("p: %s\n", line);
 		pcb_set_script(line); //pass line to pcb
-		
 		if (feof(p)) break;
 		fgets(line, 999, p);
 	}
@@ -251,14 +252,15 @@ int run(char* script)	{
 }
 
 int exec(char prog[], int length) {
-	//printf("length: %d, --%s--\n", strlen(prog), prog);
-	//printf("prog(len): %s\n", prog);
+	// printf("length: %d, --%s--\n", strlen(prog), prog);
+	// printf("prog(len): %s\n", prog);
+	// printf("length: %d\n", length);
 
 	char programs[length][1000];
 	int row = 0;
 	int col = 0;
-	int backgroundFlag = 0;
-
+	int count_total=0;
+	
 	for (int i=0; i<strlen(prog); i++) {
 		if(prog[i] == ' ') {
 			programs[row][col] = '\0'; //append NULL character to end of each row
@@ -268,56 +270,453 @@ int exec(char prog[], int length) {
 			programs[row][col++] = prog[i];
 		}
 	}
-	programs[row][col] = '\0'; //append NULL character to end of last row
+	//printf("row: %d\n", row);
 
-	if(strcmp(programs[row], "#") == 0) {
-		backgroundFlag = 1;
-		row --; //ignore the # in the programs to keep the implementation of RR the same
-	}
+	programs[row][col] = '\0'; //append NULL character to end of last row
 
 	int length_Files[row]; //store length of each file
 	for(int i=0; i<row; i++) length_Files[i] = 0; //initialize length to 0
+	
+	if(strcmp(programs[row],"MT")==0)               //Multithreaded command
+	{
 
-	for(int i=0; i<row; i++) {
-		//printf("--%s--\n", programs[i]);
-		
-		int errCode = 0;
-		char line[1000];
-
-		for(int j=0; j<1000; j++) {
-			line[j] = '\0';
-		} 
-
-		FILE *p = fopen(programs[i], "rt"); // the program is in a file
-		if (p == NULL)	return badcommandFileDoesNotExist();
-
-		pcb_init();
-		fgets(line, 999, p);
-		length_Files[i]++; //increment length of each file
-
-		while (1) {
-			if (feof(p)) break;
-			fgets(line, 999, p);
-			length_Files[i]++;
+		if(strcmp(programs[row-1],"#")==0)			//for backgound process
+		{
+			row--;
 		}
 		
-		fclose(p);
-	}
+		if(strcmp(programs[row-1],"RR30")==0)         //for round robin 30
+		{
+			row--;
+			//count_total = 0;
+			
+			for(int i=0; i<row; i++) 
+			{
+				//printf("--%s--\n", programs[i]);
+				
+				int errCode = 0;
+				char line[1000];
 
-	if(strcmp(programs[row], "RR") == 0 || strcmp(programs[row], "RR30") == 0) { //Round Robin: execute two instructions per file
-		int positions[row]; //holds indices of instructions needed for all files
+				for(int j=0; j<1000; j++) {
+					line[j] = '\0';
+				} 
+
+				FILE *p = fopen(programs[i], "rt"); // the program is in a file
+				if (p == NULL)	return badcommandFileDoesNotExist();
+
+				pcb_init();
+				fgets(line, 999, p);
+				length_Files[i]++; //increment length of each file
+				count_total++;
+
+				while (1) {
+					if (feof(p)) break;
+					// memset(line, '\0', sizeof(line));
+					fgets(line, 999, p);
+					// printf("---%s-----\n",line);
+					// if(strlen(line)==0) break;
+					length_Files[i]++;
+					count_total++; //count total number of commands from all files
+				}
+			
+				fclose(p);
+			}
+
+			// for(int m=0; m<row; m++) {
+			// 	printf("len: %d\n", length_Files[m]);
+			// } printf("total: %d\n", count_total);
+			
+			char all_commands[count_total][1000];
+			int all_commands_counter=0;
+			int positions[row]; //holds indices of instructions needed for all files
+			int counter=0; //index
+			int file1=0;
+			int file2=0;
+			int file3=0;
+			int i=0;
+			int errCode = 0;
+			char line[1000];
+			FILE *p[row]; 
+
+			for(int j=0; j<1000; j++) {
+				line[j] = '\0';
+			}
+		
+			for(int j=0; j<row; j++) {
+				p[j] = fopen(programs[j], "rt"); //open upto 3 file pointers
+				if (p[j] == NULL)	return badcommandFileDoesNotExist();
+			}
+
+			pcb_init();
+
+			for(int j=0; j<row; j++) {
+				//printf("len: %d\n", length_Files[j]);
+			}
+
+			//int count = 0;
+
+			while(1) {
+				for(int j=0; j<30; j++) { //check if two instructions exist in file
+							// if((length_Files[i]-file1)>0 && counter<row) { //check if lines left to execute, check if right number of files				
+								if (feof(p[i])) break;
+								memset(line, '\0', sizeof(line));
+								fgets(line, 999, p[i]);
+								if(strlen(line)==0) break;
+								//pcb_set_script(line); //pass line to pcb
+								strcpy(all_commands[all_commands_counter++],line);
+								//printf("file: %s, counter: %d, line: %s", programs[i], count++, line);
+
+								file1++;
+
+								//printf("all: %d, line: %s\n", all_commands_counter, line);
+							}
+						// }
+
+				i++;
+				if(i==row) break;
+				
+				int flag = 0;
+				for(int j=0; j<row; j++) {
+					if(!feof(p[j])) flag = 1;
+				}
+					
+				if(flag == 0) break;
+			}
+
+			// for (i = 0; i <count_total; i++) {
+			// 		printf("all: %d %s\n", all_commands[i]);
+			// }
+
+			//printf("%d\n", count_total);
+				
+			//even elements
+			void *program1(void *arg) {
+				int i;
+				for (i = 0; i <count_total; i+=2) 
+				{
+					printf("Program 1: %d; %s\n", i, all_commands[i]);
+				}
+				pthread_exit(NULL);
+			}
+
+			//odd elements
+			void *program2(void *arg) {
+				int i;
+				for (i = 1; i < count_total; i+=2) 
+				{
+					printf("Program 2: %d; %s\n", i, all_commands[i]);
+				}
+				pthread_exit(NULL);
+			}
+
+			pthread_t thread1, thread2;
+			pthread_create(&thread1, NULL, program1, NULL);
+			pthread_create(&thread2, NULL, program2, NULL);
+			pthread_join(thread1, NULL);
+			pthread_join(thread2, NULL);
+
+			//insert_queue();
+			//display_queue();
+			//cleanup();
+
+			for(int j=0; j<row; j++) fclose(p[j]);	
+		}
+
+		//REVIEW
+		else if(strcmp(programs[row-1],"RR")==0)         //for round robin
+		{
+			
+			for(int i=0; i<row; i++) 
+			{
+				//printf("--%s--\n", programs[i]);
+				
+				int errCode = 0;
+				char line[1000];
+
+				for(int j=0; j<1000; j++) {
+					line[j] = '\0';
+				} 
+
+				FILE *p = fopen(programs[i], "rt"); // the program is in a file
+				if (p == NULL)	return badcommandFileDoesNotExist();
+
+				pcb_init();
+				fgets(line, 999, p);
+				length_Files[i]++; //increment length of each file
+
+				while (1) {
+					if (feof(p)) break;
+					// memset(line, '\0', sizeof(line));
+					fgets(line, 999, p);
+					// printf("---%s-----\n",line);
+					// if(strlen(line)==0) break;
+					length_Files[i]++;
+					count_total++; //count total number of commands from all files
+				}
+				
+				fclose(p);
+			}
+			
+			char all_commands[count_total][1000];
+			int all_commands_counter=0;
+			//int positions[count]; //holds indices of instructions needed for all files
+			int counter=0; //index
+			int file1=0;
+			int file2=0;
+			int file3=0;
+			int i=0;
+			int errCode = 0;
+			char line[1000];
+			FILE *p[row]; 
+			
+			
+
+			for(int j=0; j<1000; j++) {
+				line[j] = '\0';
+			}
+		
+			for(int j=0; j<row; j++) {
+				p[j] = fopen(programs[j], "rt"); //open upto 3 file pointers
+				if (p[j] == NULL)	return badcommandFileDoesNotExist();
+			}
+
+			pcb_init();
+			all_commands_counter=0;
+			while(1) {
+				switch (i) { //check 0th index
+					case 0:
+						for(int j=0; j<2; j++) { //check if two instructions exist in file
+							if((length_Files[i]-file1)>0 && counter<row) { //check if lines left to execute, check if right number of files				
+								if (feof(p[i])) break;
+								fgets(line, 999, p[i]);
+								strcpy(all_commands[all_commands_counter++],line); //pass upto two lines into temporary ready queue
+								//pcb_set_script(line); //pass line to pcb
+								
+								file1++;
+							}
+						} 
+						break;
+					
+					case 1:
+						for(int j=0; j<2; j++) {
+							if((length_Files[i]-file2)>0 && counter<row) { //check if lines left to execute, check if right number of files				
+								if (feof(p[i])) break;
+								fgets(line, 999, p[i]);
+								strcpy(all_commands[all_commands_counter++],line); //pass upto two lines into temporary ready queue
+								//pcb_set_script(line); //pass line to pcb
+								
+								file2++;
+							}
+						} 
+						break;
+
+					case 2:
+						for(int j=0; j<2; j++) {
+							if((length_Files[i]-file3)>0 && counter<row) { //check if lines left to execute, check if right number of files				
+								if (feof(p[i])) break;
+								fgets(line, 999, p[i]);
+								strcpy(all_commands[all_commands_counter++],line); //pass upto two lines into temporary ready queue
+								// pcb_set_script(line); //pass line to pcb
+								
+								file3++;
+							}
+						} 
+						break;
+				}
+
+				i++;
+				if(i>2) i=0; //restart from 0
+
+				int flag = 0;
+				for(int j=0; j<row; j++) {
+					if(!feof(p[j])) flag = 1;
+				}
+				
+				if(flag == 0) break;
+			}
+
+			// insert_queue();
+			// display_queue();
+			// cleanup();
+
+			for(int j=0; j<row; j++) fclose(p[j]);
+
+			//even elements
+			// void *program1(void *arg) 
+			// {
+			// 	int i;
+			// 	for (i = 0; i <count_total; i+=2) 
+			// 	{
+			// 		//printf("Program 1: %d %s\n", all_commands[i]);
+			// 	}
+			// 	pthread_exit(NULL);
+			// }
+
+			// //odd elements
+			// void *program2(void *arg) 
+			// {
+			// 	int i;
+			// 	for (i = 1; i < count_total; i+=2) 
+			// 	{
+			// 		//printf("Program 2: %d %s\n", i,all_commands[i]);
+			// 	}
+			// 	pthread_exit(NULL);
+			// }
+			// pthread_t thread1, thread2;
+			// pthread_create(&thread1, NULL, program1, NULL);
+			// pthread_create(&thread2, NULL, program2, NULL);
+			// pthread_join(thread1, NULL);
+			// pthread_join(thread2, NULL);	
+		}
+	
+	
+	}
+	else if(strcmp(programs[row],"#")==0)
+	{
+		if(strcmp(programs[row-1],"SJF")==0)
+		{
+			
+			for(int i=0; i<row-1; i++) { //ignore policy while iterating
+				// printf("--%s--\n", programs[i]);
+				
+				int errCode = 0;
+				char line[1000];
+
+				for(int i=0; i<1000; i++) {
+					line[i] = '\0';
+				}
+
+				FILE *p = fopen(programs[i], "rt"); // the program is in a file
+				if (p == NULL)	return badcommandFileDoesNotExist();
+
+				pcb_init();
+				fgets(line, 999, p);
+
+				while (1) {
+					
+					pcb_set_script(line); //pass line to pcb
+					memset(line, '\0', sizeof(line));
+					if (feof(p)) break;
+					fgets(line, 999, p);
+					if(strlen(line)==0)
+					{
+						break;
+					}
+				}
+
+				insert_queue();
+				display_queue();
+				cleanup();
+
+				fclose(p);
+			}
+		}
+		
+			if(strcmp(programs[row-1], "RR30") == 0) { //Round Robin: execute two instructions per file
+			row--;
+
+			int positions[row]; //holds indices of instructions needed for all files
+			int counter=0; //index
+			int file1=0;
+			int file2=0;
+			int file3=0;
+			int i=0;
+			int errCode = 0;
+			char line[1000];
+			FILE *p[row]; 
+
+			for(int j=0; j<1000; j++) {
+				line[j] = '\0';
+			}
+		
+			for(int j=0; j<row; j++) {
+				p[j] = fopen(programs[j], "rt"); //open upto 3 file pointers
+				if (p[j] == NULL)	return badcommandFileDoesNotExist();
+			}
+
+			pcb_init();
+
+			for(int j=0; j<row; j++) {
+				//printf("len: %d\n", length_Files[j]);
+			}
+
+			int count = 0;
+
+			while(1) {
+				for(int j=0; j<30; j++) { //check if two instructions exist in file
+							// if((length_Files[i]-file1)>0 && counter<row) { //check if lines left to execute, check if right number of files				
+								if (feof(p[i])) break;
+								memset(line, '\0', sizeof(line));
+								fgets(line, 999, p[i]);
+								if(strlen(line)==0) break;
+								pcb_set_script(line); //pass line to pcb
+								
+								//printf("file: %s, counter: %d, line: %s", programs[i], count++, line);
+
+								file1++;
+							}
+						// }
+
+				i++;
+				//if(i==row) i=0; //restart from 0
+				if(i==row) break;
+
+				int flag = 0;
+				for(int j=0; j<row; j++) {
+					if(!feof(p[j])) flag = 1;
+				}
+					
+				if(flag == 0) break;
+			}
+			
+			insert_queue();
+			display_queue();
+			cleanup();
+
+			for(int j=0; j<row; j++) fclose(p[j]);
+
+		}
+
+		if(strcmp(programs[row-1],"RR")==0)
+		{
+			for(int i=0; i<row; i++) {
+			//printf("--%s--\n", programs[i]);
+			
+			int errCode = 0;
+			char line[1000];
+
+			for(int j=0; j<1000; j++) {
+				line[j] = '\0';
+			} 
+
+			FILE *p = fopen(programs[i], "rt"); // the program is in a file
+			if (p == NULL)	return badcommandFileDoesNotExist();
+
+			pcb_init();
+			fgets(line, 999, p);
+			length_Files[i]++; //increment length of each file
+
+			while (1) {
+				if (feof(p)) break;
+				fgets(line, 999, p);
+				length_Files[i]++;
+			}
+			
+			fclose(p);
+		}
+			
+			
+			int positions[row]; //holds indices of instructions needed for all files
 		int counter=0; //index
 		int file1=0;
 		int file2=0;
 		int file3=0;
 		int i=0;
 		int errCode = 0;
-		int extendedRR = 2;
-
 		char line[1000];
 		FILE *p[row]; 
-
-		if(strcmp(programs[row], "RR30") == 0) extendedRR = 30;
+		
+		
 
 		for(int j=0; j<1000; j++) {
 			line[j] = '\0';
@@ -333,7 +732,7 @@ int exec(char prog[], int length) {
 		while(1) {
 			switch (i) { //check 0th index
 				case 0:
-					for(int j=0; j<extendedRR; j++) { //check if two instructions exist in file
+					for(int j=0; j<2; j++) { //check if two instructions exist in file
 						if((length_Files[i]-file1)>0 && counter<row) { //check if lines left to execute, check if right number of files				
 							if (feof(p[i])) break;
 							fgets(line, 999, p[i]);
@@ -345,7 +744,7 @@ int exec(char prog[], int length) {
 					break;
 				
 				case 1:
-					for(int j=0; j<extendedRR; j++) {
+					for(int j=0; j<2; j++) {
 						if((length_Files[i]-file2)>0 && counter<row) { //check if lines left to execute, check if right number of files				
 							if (feof(p[i])) break;
 							fgets(line, 999, p[i]);
@@ -357,7 +756,7 @@ int exec(char prog[], int length) {
 					break;
 
 				case 2:
-					for(int j=0; j<extendedRR; j++) {
+					for(int j=0; j<2; j++) {
 						if((length_Files[i]-file3)>0 && counter<row) { //check if lines left to execute, check if right number of files				
 							if (feof(p[i])) break;
 							fgets(line, 999, p[i]);
@@ -385,147 +784,389 @@ int exec(char prog[], int length) {
 		cleanup();
 
 		for(int j=0; j<row; j++) fclose(p[j]);
-	}
 
-	if(strcmp(programs[row], "FCFS") == 0 || strcmp(programs[row], "SJF") == 0) {
-		//Shortest Job First: swap contents and length of files into ascending order
-		if(strcmp(programs[row], "SJF") == 0) {
-			for(int i=0; i<row; i++) {
-				for(int j=0; j<row-i-1; j++) {
-					if(length_Files[j] > length_Files[j+1]) {
-						char tempFiles[1000];
-						strcpy(tempFiles, programs[j]);
-						strcpy(programs[j], programs[j+1]);
-						strcpy(programs[j+1], tempFiles);
-						
-						int tempLength = length_Files[j];
-						length_Files[j] = length_Files[j+1];
-						length_Files[j+1] = tempLength;
-					}
-				}
-			}
+			
 		}
-
-		//for(int i=0; i<row; i++) printf("len: %d, file: %s, i = %d\n", length_Files[i], programs[i], i);
-
-		//pass lines of code FCFS (even after sorting for SJF)
-		for(int i=0; i<row; i++) { //ignore policy while iterating
+	}
+	else
+	{
+		
+		
+		//count number of lines in every file	
+		for(int i=0; i<row; i++) 
+		{
 			//printf("--%s--\n", programs[i]);
 			
 			int errCode = 0;
 			char line[1000];
 
-			for(int i=0; i<1000; i++) {
-				line[i] = '\0';
-			}
+			for(int j=0; j<1000; j++) {
+				line[j] = '\0';
+			} 
 
 			FILE *p = fopen(programs[i], "rt"); // the program is in a file
 			if (p == NULL)	return badcommandFileDoesNotExist();
 
 			pcb_init();
 			fgets(line, 999, p);
+			length_Files[i]++; //increment length of each file
 
 			while (1) {
-				pcb_set_script(line); //pass line to pcb
-
 				if (feof(p)) break;
+				memset(line, '\0', sizeof(line));
 				fgets(line, 999, p);
+				if(strlen(line) == 0) break;
+				length_Files[i]++;
+			}
+
+			// printf("%s, %d\n", programs[i], length_Files[i]);
+
+			fclose(p);
+		}
+
+		if(strcmp(programs[row], "RR") == 0) { //Round Robin: execute two instructions per file
+			int positions[row]; //holds indices of instructions needed for all files
+			int counter=0; //index
+			int file1=0;
+			int file2=0;
+			int file3=0;
+			int i=0;
+			int errCode = 0;
+			char line[1000];
+			FILE *p[row]; 
+
+			for(int j=0; j<1000; j++) {
+				line[j] = '\0';
+			}
+		
+			for(int j=0; j<row; j++) {
+				p[j] = fopen(programs[j], "rt"); //open upto 3 file pointers
+				if (p[j] == NULL)	return badcommandFileDoesNotExist();
+			}
+
+			pcb_init();
+
+			for(int j=0; j<row; j++) {
+				//printf("len: %d\n", length_Files[j]);
+			}
+
+			int count = 0;
+
+			while(1) {
+				//printf("%d\n", i);
+				// switch (i) { //check 0th index
+					// case 0:
+						// for(int j=0; j<2; j++) { //check if two instructions exist in file
+							// if((length_Files[i]-file1)>0 && counter<row) { //check if lines left to execute, check if right number of files				
+								// if (feof(p[i])) break;
+								// memset(line, '\0', sizeof(line));
+								// fgets(line, 999, p[i]);
+								// if(strlen(line)==0) break;
+								// pcb_set_script(line); //pass line to pcb
+								
+								// file1++;
+							// }
+						// } 
+						// break;
+					
+					// case 1:
+						// for(int j=0; j<2; j++) {
+							// if((length_Files[i]-file2)>0 && counter<row) { //check if lines left to execute, check if right number of files				
+								// if (feof(p[i])) break;
+								// memset(line, '\0', sizeof(line));
+								// fgets(line, 999, p[i]);
+								// if(strlen(line)==0) break;
+								// pcb_set_script(line); //pass line to pcb
+								
+								// file2++;
+							// }
+						// } 
+						// break;
+
+					// case 2:
+						// for(int j=0; j<2; j++) {
+							// if((length_Files[i]-file3)>0 && counter<row) { //check if lines left to execute, check if right number of files				
+								// if (feof(p[i])) break;
+								// fgets(line, 999, p[i]);
+								// if(strlen(line)==0) break;
+								// pcb_set_script(line); //pass line to pcb
+								
+								// file3++;
+							// }
+						// } 
+						// break;
+				// }
+				for(int j=0; j<2; j++) { //check if two instructions exist in file
+							// if((length_Files[i]-file1)>0 && counter<row) { //check if lines left to execute, check if right number of files				
+								if (feof(p[i])) break;
+								memset(line, '\0', sizeof(line));
+								fgets(line, 999, p[i]);
+								if(strlen(line)==0) break;
+								pcb_set_script(line); //pass line to pcb
+								
+								//printf("file: %s, counter: %d, line: %s", programs[i], count++, line);
+
+								file1++;
+							}
+						// }
+
+				i++;
+				if(i==row) i=0; //restart from 0
+
+				int flag = 0;
+				for(int j=0; j<row; j++) {
+					if(!feof(p[j])) flag = 1;
+				}
+					
+				if(flag == 0) break;
+			}
+			
+			insert_queue();
+			display_queue();
+			cleanup();
+
+			for(int j=0; j<row; j++) fclose(p[j]);
+
+		}
+
+			if(strcmp(programs[row], "RR30") == 0) { //Round Robin: execute two instructions per file
+			int positions[row]; //holds indices of instructions needed for all files
+			int counter=0; //index
+			int file1=0;
+			int file2=0;
+			int file3=0;
+			int i=0;
+			int errCode = 0;
+			char line[1000];
+			FILE *p[row]; 
+
+			for(int j=0; j<1000; j++) {
+				line[j] = '\0';
+			}
+		
+			for(int j=0; j<row; j++) {
+				p[j] = fopen(programs[j], "rt"); //open upto 3 file pointers
+				if (p[j] == NULL)	return badcommandFileDoesNotExist();
+			}
+
+			pcb_init();
+
+			for(int j=0; j<row; j++) {
+				//printf("len: %d\n", length_Files[j]);
+			}
+
+			int count = 0;
+
+			while(1) {
+				for(int j=0; j<30; j++) { //check if two instructions exist in file
+							// if((length_Files[i]-file1)>0 && counter<row) { //check if lines left to execute, check if right number of files				
+								if (feof(p[i])) break;
+								memset(line, '\0', sizeof(line));
+								fgets(line, 999, p[i]);
+								if(strlen(line)==0) break;
+								pcb_set_script(line); //pass line to pcb
+								
+								//printf("file: %s, counter: %d, line: %s", programs[i], count++, line);
+
+								file1++;
+							}
+						// }
+
+				i++;
+				if(i==row) i=0; //restart from 0
+
+				int flag = 0;
+				for(int j=0; j<row; j++) {
+					if(!feof(p[j])) flag = 1;
+				}
+					
+				if(flag == 0) break;
+			}
+			
+			insert_queue();
+			display_queue();
+			cleanup();
+
+			for(int j=0; j<row; j++) fclose(p[j]);
+
+		}
+
+		if(strcmp(programs[row], "FCFS") == 0 || strcmp(programs[row], "SJF") == 0) {
+			//Shortest Job First: swap contents and length of files into ascending order
+			if(strcmp(programs[row], "SJF") == 0) {
+				for(int i=0; i<row; i++) {
+					for(int j=0; j<row-i-1; j++) {
+						if(length_Files[j] > length_Files[j+1]) {
+							char tempFiles[1000];
+							strcpy(tempFiles, programs[j]);
+							strcpy(programs[j], programs[j+1]);
+							strcpy(programs[j+1], tempFiles);
+							
+							int tempLength = length_Files[j];
+							length_Files[j] = length_Files[j+1];
+							length_Files[j+1] = tempLength;
+						}
+					}
+				}
+			}
+
+			// for(int i=0; i<row; i++) printf("len: %d, file: %s, i = %d\n", length_Files[i], programs[i], i);
+
+			//pass lines of code FCFS (even after sorting for SJF)
+			for(int i=0; i<row; i++) { //ignore policy while iterating
+				//printf("--%s--\n", programs[i]);
+				
+				int errCode = 0;
+				char line[1000];
+
+				for(int i=0; i<1000; i++) {
+					line[i] = '\0';
+				}
+
+				FILE *p = fopen(programs[i], "rt"); // the program is in a file
+				if (p == NULL)	return badcommandFileDoesNotExist();
+
+				pcb_init();
+				fgets(line, 999, p);
+
+				while (1) {
+					pcb_set_script(line); //pass line to pcb
+
+					if (feof(p)) break;
+					fgets(line, 999, p);
+				}
+
+				insert_queue();
+				display_queue();
+				cleanup();
+
+				fclose(p);
+			}
+		}
+
+	if(strcmp(programs[row], "AGING") == 0) {
+
+			struct queue {
+				char fileName[1000];
+				int length;
+			} aging_queue[row];//third array
+
+			int toBeProcessed[row]; //first array
+			FILE *p[row]; //second array
+			char line[1000];
+			int matchrow = row;
+			
+			for(int j=0; j<1000; j++) line[j] = '\0';
+
+			//initiate aging_queue array struct with file names and length
+			for(int i=0; i<row; i++) {
+				strcpy(aging_queue[i].fileName, programs[i]);
+				aging_queue[i].length = length_Files[i];
+			}
+
+			//initate the file pointers
+			for(int j=0; j<row; j++) {
+				p[j] = fopen(aging_queue[j].fileName, "rt"); //open upto 3 file pointers
+				if (p[j] == NULL)	return badcommandFileDoesNotExist();
+			}
+
+			while(1) {
+				
+				//sort ready queue based off number of lines left after aging
+				for(int i=0; i<matchrow; i++) {
+					for(int j=0; j<matchrow-i-1; j++) {
+						if(length_Files[j] > length_Files[j+1]) {
+							char tempFiles[1000];
+							strcpy(tempFiles, programs[j]);
+							strcpy(programs[j], programs[j+1]);
+							strcpy(programs[j+1], tempFiles);
+							
+							//swap length of files
+							int tempLength = length_Files[j];
+							length_Files[j] = length_Files[j+1];
+							length_Files[j+1] = tempLength;
+
+							//swap files in the queue based on priority
+							struct queue temp_queue = aging_queue[j];
+							aging_queue[j] = aging_queue[j+1];
+							aging_queue[j+1] = temp_queue;
+
+							//swap file pointers
+							FILE *temp_pointer = p[j];
+							p[j] = p[j+1];
+							p[j+1] = temp_pointer;
+						}
+					}
+				}
+
+				if (feof(p[0])){
+					for(int l=0;l<matchrow;l++)
+					{
+						p[l]=p[l+1];
+					}
+					matchrow--;
+				}
+				if(matchrow <= 0) break; //when all commands are executed, leave loop
+
+				fgets(line, 999, p[0]);
+				pcb_set_script(line);
+
+				//printf("\n\nHEAD: %s, line: %s", aging_queue[0].fileName, line);
+				//printf("%s\n", line);
+				//decrement length of the other files not at head
+				for(int l=1; l<matchrow; l++) {
+					length_Files[l]--;
+					//printf("file: %s\n", aging_queue[l].fileName);
+				}
 			}
 
 			insert_queue();
 			display_queue();
 			cleanup();
 
-			fclose(p);
+			//sort ready queue based off number of lines left after aging
+			// for(int i=0; i<row; i++) {
+			// 	for(int j=0; j<row-i-1; j++) {
+			// 		if(length_Files[j] > length_Files[j+1]) {
+			// 			char tempFiles[1000];
+			// 			strcpy(tempFiles, programs[j]);
+			// 			strcpy(programs[j], programs[j+1]);
+			// 			strcpy(programs[j+1], tempFiles);
+						
+			// 			int tempLength = length_Files[j];
+			// 			length_Files[j] = length_Files[j+1];
+			// 			length_Files[j+1] = tempLength;
+			// 		}
+			// 	}
+			// }
+
+			// for(int i=0; i<row; i++) {
+			// 	strcpy(aging_queue[i].fileName, programs[i]);
+			// 	aging_queue[i].length = length_Files[i];
+			// }
+
+			// for(int i=0; i<row; i++) {
+			// 	toBeProcessed[i] = aging_queue[i].length;
+			// 	printf("name: %s, length: %d\n", aging_queue[i].fileName, aging_queue[i].length);
+			// }
+
+			// for(int j=0; j<row; j++) {
+			// 	p[j] = fopen(aging_queue[j].fileName, "rt"); //open upto 3 file pointers
+			// 	if (p[j] == NULL)	return badcommandFileDoesNotExist();
+			// }
+
+			// while(1) {
+				
+
+			// 	if((toBeProcessed[0]-aging_queue[0].length)>0) { //process only the head of the queue
+					
+			// 		if (feof(p[0])) break;
+			// 		fgets(line, 999, p[0]);
+			// 		pcb_set_script(line);
+			// 	}
+			// }
 		}
 	}
-
-	if(strcmp(programs[row], "AGING") == 0) {
-
-		struct queue {
-			char fileName[1000];
-			int length;
-		} aging_queue[row];//third array
-
-		int toBeProcessed[row]; //first array
-		FILE *p[row]; //second array
-		char line[1000];
-		int matchrow = row;
-		
-		for(int j=0; j<1000; j++) line[j] = '\0';
-
-		//initiate aging_queue array struct with file names and length
-		for(int i=0; i<row; i++) {
-			strcpy(aging_queue[i].fileName, programs[i]);
-			aging_queue[i].length = length_Files[i];
-		}
-
-		//initate the file pointers
-		for(int j=0; j<row; j++) {
-			p[j] = fopen(aging_queue[j].fileName, "rt"); //open upto 3 file pointers
-			if (p[j] == NULL)	return badcommandFileDoesNotExist();
-		}
-
-		while(1) {
-
-            if (feof(p[0])) {
-				//printf("CLOSING p[0]: %s\n", programs[0]);
-				fclose(p[0]);
-                for(int l=0;l<matchrow; l++) {
-					strcpy(programs[l], programs[l+1]);
-					length_Files[l] = length_Files[l+1];
-					aging_queue[l] = aging_queue[l+1];
-					p[l]=p[l+1]; //swap contents when reached EOF
-                }
-                matchrow--;
-            }
-
-            if(matchrow <= 0) break; //when all commands are executed, leave loop
-            
-            //sort ready queue based off number of lines left after aging
-            for(int i=0; i<matchrow; i++) {
-                for(int j=0; j<matchrow-i-1; j++) {
-                    if(length_Files[j] > length_Files[j+1]) {
-                        char tempFiles[1000];
-                        strcpy(tempFiles, programs[j]);
-                        strcpy(programs[j], programs[j+1]);
-                        strcpy(programs[j+1], tempFiles);
-                        
-                        //swap length of files
-                        int tempLength = length_Files[j];
-                        length_Files[j] = length_Files[j+1];
-                        length_Files[j+1] = tempLength;
-
-                        //swap files in the queue based on priority
-                        struct queue temp_queue = aging_queue[j];
-                        aging_queue[j] = aging_queue[j+1];
-                        aging_queue[j+1] = temp_queue;
-
-                        //swap file pointers
-                        FILE *temp_pointer = p[j];
-                        p[j] = p[j+1];
-                        p[j+1] = temp_pointer;
-                    }
-                }
-            }
-
-            fgets(line, 999, p[0]);
-            pcb_set_script(line);
-
-            //printf("%s\n", line);
-            
-			//decrement length of the other files not at head
-            for(int l=1; l<matchrow; l++) {
-                if(length_Files[l]>0) length_Files[l]--; //length shouldn't be negative
-                //printf("file: %s, length: %d\n", aging_queue[l].fileName, length_Files[l]);
-            }
-        }
-		
-		insert_queue();
-		display_queue();
-		cleanup();
-	}
-
 	return 0;
 }
 
@@ -542,44 +1183,44 @@ int is_alphanumeric(char* str) {
 	return 0;
 }
 
-int my_mkdir(char* dirname) {
+// int my_mkdir(char* dirname) {
 
-	if (dirname[0] == '$') {
-		dirname++; //increment pointer to ignore $
-		char* dirnameToMake = mem_get_value(dirname);
+// 	if (dirname[0] == '$') {
+// 		dirname++; //increment pointer to ignore $
+// 		char* dirnameToMake = mem_get_value(dirname);
 
-		//check if one token
-		for (int i=0; dirnameToMake[i] != '\0'; ++i) {
-        	if (dirnameToMake[i] == ' ') {
-				printf("Bad command: my_mkdir\n");
-				return 1;
-			}
-		}
+// 		//check if one token
+// 		for (int i=0; dirnameToMake[i] != '\0'; ++i) {
+//         	if (dirnameToMake[i] == ' ') {
+// 				printf("Bad command: my_mkdir\n");
+// 				return 1;
+// 			}
+// 		}
 
-		if(strcmp(dirnameToMake, "Variable does not exist") == 0) {
-			printf("Bad command: my_mkdir\n");
-			return 1;
-		}
+// 		if(strcmp(dirnameToMake, "Variable does not exist") == 0) {
+// 			printf("Bad command: my_mkdir\n");
+// 			return 1;
+// 		}
 		
-		mkdir(dirnameToMake, 0775);
-		return 0;
-  	}
+// 		// mkdir(dirnameToMake, 0775);
+// 		return 0;
+//   	}
 
-	if (is_alphanumeric(dirname) == 1) {
-		mkdir(dirname, 0775);
-		return 0;
-	}  else {
-		printf("Did not pass the alphanumeric test\n");
-		return 1;
-	}
+// 	if (is_alphanumeric(dirname) == 1) {
+// 		// mkdir(dirname, 0775);
+// 		return 0;
+// 	}  else {
+// 		printf("Did not pass the alphanumeric test\n");
+// 		return 1;
+// 	}
 
-	if (mkdir(dirname, 0775)) { //check last since mkdir is called in if statement
-		printf("Error: Directory already exists\n");
-		return 1;
-	}
+// 	// if (mkdir(dirname, 0775)) { //check last since mkdir is called in if statement
+// 	// 	printf("Error: Directory already exists\n");
+// 	// 	return 1;
+// 	// }
 
-	return 0;
-} 
+// 	return 0;
+// } 
 
 int my_ls() {
 
