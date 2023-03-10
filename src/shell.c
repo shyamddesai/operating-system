@@ -4,16 +4,12 @@
 #include <unistd.h>
 #include "interpreter.h"
 #include "shellmemory.h"
-
-
 int MAX_USER_INPUT = 1000;
 int parseInput(char ui[]);
-
 int main(int argc, char *argv[]) {
     printf("%s\n", "Shell version 1.2 Created January 2023");
     //help();
 	printf("\n");
-
     char prompt = '$';              // Shell prompt
     char userInput[MAX_USER_INPUT]; // user's input stored here
     int errorCode = 0;              // zero means no error, default
@@ -28,7 +24,6 @@ int main(int argc, char *argv[]) {
 	int t_row=0;
 	int t1_row=0;
 	int i ,j,k,l,m;
-
     // init shell memory
     mem_init();
     if (!isatty(0)){
@@ -58,8 +53,6 @@ int main(int argc, char *argv[]) {
 		// for(int i=0; i<t_row; i++) {
         //     printf("temp: %s\n", temp_Array[i]);
         // }
-
-
 		//executes only for non-background (#) commands
 		if(is_background==0)
 		{
@@ -71,6 +64,7 @@ int main(int argc, char *argv[]) {
 		}
 		else
 		{
+			
 		//code for placing non exec files in temp.txt
 		int c=0;
 		FILE * fp=fopen("temp","wt");
@@ -99,7 +93,6 @@ int main(int argc, char *argv[]) {
 				// }
 				// strcpy(temp_Array[c],dest1);
 			}
-
             // else
 			// {
 				
@@ -119,11 +112,9 @@ int main(int argc, char *argv[]) {
 		if(is_tempfilecreated == 1) {
 			char dest4[1000]; //array will be used to pass to interpreter
 			memset(dest4, '\0', sizeof(dest4));
-
-			for(int i=0; i<t_row; i++) {
+			//for(int i=0; i<t_row; i++) {
 				//printf("length: %d, temp: --%s--\n", strlen(temp_Array[i]), temp_Array[i]);
-
-				if(temp_Array[i][strlen(temp_Array[i])-1] == '#') {
+				if(temp_Array[0][strlen(temp_Array[i])-1] == '#') {
 					strcpy(dest4, "exec temp");
 					
 					for(int j=4, k=9; j<strlen(temp_Array[i]); j++, k++) {
@@ -131,20 +122,20 @@ int main(int argc, char *argv[]) {
 						//printf("dest4: %s\n", dest4);
 					}
 					//dest4[k] = '\0'; 
-				}
-			}
-
+				
+			//}
 			//printf("dest4: %s\n", dest4);
 			strcpy(temp_Array[0], dest4);
+			}
 		}
-
 		// for(int i=0;i<t_row;i++)
 		// {
 			
-		// 	printf("\n[%d]--%s--\n",i,temp_Array[i]);
+	
+	// printf("\n[%d]--%s--\n",i,temp_Array[i]);
         // }
 		
-				for(int i=0;i<t_row;i++)
+		for(int i=0;i<t_row;i++)
 		{	
 			
 			char dest[1000];
@@ -156,72 +147,110 @@ int main(int argc, char *argv[]) {
 				strcpy(temp1_Array[t1_row++], temp_Array[i]);
 			}
 		}
-
-		for(int i=0; i<t1_row; i++) {
-			//printf("temp1: %s\n", temp1_Array[i]);
-			errorCode = parseInput(temp1_Array[i]);
-            if (errorCode == -1) exit(99); // ignore all other errors
-		}
-
-		// for(int i=0;i<t1_row;i++)
-		// {
-		// 	strcat(dest3,temp1_Array[i]); //append all exec commands together
-		// 	strcat(dest3," ");
-		// 	// printf("\n[%d]--%s--\n",i,temp1_Array[i]);
-        // }
+		//for(int i=0; i<t1_row; i++) {
+			//printf("temp111: %s\n", temp1_Array[i]);
+			
+			
+			///version 1 lines
+			// errorCode = parseInput(temp1_Array[i]);
+            // if (errorCode == -1) exit(99); // ignore all other errors
+		//}
+		//for(int i=0;i<t1_row;i++)
+		//{
+		//	strcat(dest3,temp1_Array[i]); //append all exec commands together
+		//	strcat(dest3," ");
+		//	// printf("\n[%d]--%s--\n",i,temp1_Array[i]);
+       // }
 		
-		// char dest3[1000]; //array will be used to pass to interpreter
-		// memset(dest3, '\0', sizeof(dest3));
+		char dest3[1000]; //array will be used to pass to interpreter
+		memset(dest3, '\0', sizeof(dest3));
 		
 		// if(is_background==1)
 		// {
-		// 	strcpy(dest3,"exec temp ");
+			// strcpy(dest3,"exec temp ");
 		// }			
 		// else
 		// {
-		// 	strcpy(dest3,"exec ");	
+			// strcpy(dest3,"exec ");	
 		// }
 		
-		// for(i=0;i<t1_row;i++) //t1_row holds number of commands in temp1 array
-		// {
-		// 	for( j=0;j<3;j++) //iterate for SJF, RR, RR30
-		// 	{
-		// 		for(k =0;k<strlen(temp1_Array[i]);k++) //iterate for exec commands
-		// 		{
+		for(i=0;i<t1_row;i++) //t1_row holds number of commands in temp1 array
+		{
+			for( j=0;j<3;j++) //iterate for SJF, RR, RR30
+			{
+				for(k =0;k<strlen(temp1_Array[i]);k++) //iterate for exec commands
+				{
 					
-		// 			if(p_commands[j][0]==temp1_Array[i][k])
-		// 			{
+					if(p_commands[j][0]==temp1_Array[i][k])
+					{
 						
-        //                 //iterate through entire command to find substring of RR, RR30, or SJF
-		// 				for(l=k,m=0;m<strlen(p_commands[j]);l++,m++)
-		// 				{
-		// 					//printf("%c->%c\n",p_commands[j][m],temp1_Array[i][l]);
-		// 					if(temp1_Array[i][l]!=p_commands[j][m])
-		// 					{
-		// 						break;
-		// 					}
+                        //iterate through entire command to find substring of RR, RR30, or SJF
+						for(l=k,m=0;m<strlen(p_commands[j]);l++,m++)
+						{
+							//printf("%c->%c\n",p_commands[j][m],temp1_Array[i][l]);
+							if(temp1_Array[i][l]!=p_commands[j][m])
+							{
+								break;
+							}
 							
-		// 				}
-		// 				if(m>=strlen(p_commands[j]))	
-		// 				{
-		// 					schedule=j; //schedule is 0 or 1 depending on SJF or RR
-		// 					temp1_Array[i][k-1]='\0';
-		// 					// for(int o=k;o<strlen(p_commands[j])+k;o++)
-		// 					// {
-		// 						// printf("before%d-> %s\n",o,temp1_Array[i]);
-		// 						// temp1_Array[i][o]=temp1_Array[i][o+1];
-		// 						// printf("alter%d -> %s\n",o,temp1_Array[i]);
-		// 					// }
-		// 					  //printf("found at %d of -%s-, %s\n",k,temp1_Array[i], p_commands[j]);
-		// 				}
+						}
+						if(m>=strlen(p_commands[j]))	
+						{
+							schedule=j; //schedule is 0 or 1 depending on SJF or RR
+							temp1_Array[i][k-1]='\0';
+							// for(int o=k;o<strlen(p_commands[j])+k;o++)
+							// {
+								// printf("before%d-> %s\n",o,temp1_Array[i]);
+								// temp1_Array[i][o]=temp1_Array[i][o+1];
+								// printf("alter%d -> %s\n",o,temp1_Array[i]);
+							// }
+							  //printf("found at %d of -%s-, %s\n",k,temp1_Array[i], p_commands[j]);
+						}
 						
-		// 			}
-		// 		}
+					}
+				}
 				
-		// 	}
+			}
 			
-		// }
-
+		}
+		
+		char dest4[1000]; //array will be used to pass to interpreter
+		memset(dest4, '\0', sizeof(dest4));
+		strcpy(dest4,temp1_Array[0]);
+		k=strlen(temp1_Array[0]);
+		for(int i=1;i<t1_row;i++)
+		{
+			
+			//for(int i=0; i<t_row; i++) {
+				//printf("length: %d, temp: --%s--\n", strlen(temp_Array[i]), temp_Array[i]);
+				// if(temp_Array[0][strlen(temp_Array[i])-1] == '#') {
+					// strcpy(dest4, "exec temp");
+					
+					for(int j=4; j<strlen(temp1_Array[i]); j++, k++) {
+						// printf("dest4: %s\n", dest4);
+						dest4[k] = temp1_Array[i][j]; //strip exec 
+						// printf("dest4: %s\n", dest4);
+					}
+					dest4[k] = '\0'; 
+				
+			//}
+			// printf("dest4: %s\n", dest4);
+			// strcpy(temp_Array[0], dest4);
+			// }
+			// strcat(dest3,temp1_Array[i]); //append all exec commands together
+			// strcat(dest3," ");
+			// printf("\n[%d]--%s--\n",i,temp1_Array[i]);
+       }
+		strcat(dest4," ");
+		strcat(dest4,p_commands[schedule]);
+		strcat(dest4," ");
+		strcat(dest4,"#");
+		
+		//printf("dest4: %s\n", dest4);
+		
+		errorCode = parseInput(dest4);
+            if (errorCode == -1) exit(99); // ignore all other errors
+			
         //place exec ... # to the
 		// if(strcmp(p_commands[schedule],"RR")==0)
 		// {
@@ -248,7 +277,6 @@ int main(int argc, char *argv[]) {
         // if(is_background != 1 && is_tempfilecreated == 1) {
         //     strcat(dest3, " temp ");
         // }
-
 		// if(schedule!=-1)
 		// {
 		// 	strcat(dest3," ");
@@ -275,7 +303,6 @@ int main(int argc, char *argv[]) {
     while (1) {
         if (isatty(0)) // returns 1 when file descriptor input refers to the keyboard
             printf("%c ", prompt);
-
         while (fgets(userInput, MAX_USER_INPUT - 1, stdin) == NULL); // fgets returns NULL when reached EOF
       
         if (feof(stdin))
@@ -297,14 +324,12 @@ int main(int argc, char *argv[]) {
             }
             array_commands[row][col++] = userInput[i]; // copy the command, character by character and increment col
         }
-
         if (oneliner == 0) { // if not a one-liner, execute normally
             errorCode = parseInput(userInput);
             if (errorCode == -1) exit(99); // ignore all other errors
             memset(userInput, 0, sizeof(userInput));
         } else {
             array_commands[row][col - 1] = '\0'; // insert NULL character at the end of the last command
-
             for (int i=0; i <= row; i++)
 			{
                 errorCode = parseInput(array_commands[i]);
@@ -316,7 +341,6 @@ int main(int argc, char *argv[]) {
 	}
     return 0;
 }
-
 int parseInput(char ui[])
 {
     char tmp[200];
@@ -341,7 +365,6 @@ int parseInput(char ui[])
             break;
         a++;
     }
-
     errorCode = interpreter(words, w);
     return errorCode;
 }
