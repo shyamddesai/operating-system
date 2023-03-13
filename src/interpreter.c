@@ -255,8 +255,7 @@ int exec(char prog[], int length) {
 	int row = 0;
 	int col = 0;
 	int count_total = 0;
-	int length_Files[row]; //store length of each file
-	
+		
 	for (int i=0; i<strlen(prog); i++) {
 		if(prog[i] == ' ') {
 			programs[row][col] = '\0'; //append NULL character to end of each row
@@ -266,6 +265,8 @@ int exec(char prog[], int length) {
 			programs[row][col++] = prog[i];
 		}
 	}
+	
+	int length_Files[row]; //store length of each file
 		
 	if(strcmp(programs[row],"MT")==0) { //Multithreading
 		if(strcmp(programs[row-1],"#")==0) { //Multithreading w/Background
