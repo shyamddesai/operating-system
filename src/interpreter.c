@@ -255,6 +255,11 @@ int exec(char prog[], int length) {
 	int row = 0;
 	int col = 0;
 	int count_total = 0;
+
+	//initialize programs array with NULL
+	for(int i=0; i<length; i++)	
+		for(int j=0; j<1000; j++)
+			programs[i][j] = '\0';
 		
 	for (int i=0; i<strlen(prog); i++) {
 		if(prog[i] == ' ') {
@@ -265,15 +270,13 @@ int exec(char prog[], int length) {
 			programs[row][col++] = prog[i];
 		}
 	}
-	
+
 	int length_Files[row]; //store length of each file
 		
-	if(strcmp(programs[row],"MT")==0) { //Multithreading
-		if(strcmp(programs[row-1],"#")==0) { //Multithreading w/Background
-			row--;
-		}
+	if(strcmp(programs[row],"MT") == 0) { //Multithreading
+		if(strcmp(programs[row-1],"#") == 0) row--; //Multithreading w/Background
 
-		if(strcmp(programs[row-1],"RR30")==0) { //Multithreading Background w/RR30
+		if(strcmp(programs[row-1],"RR30") == 0) { //Multithreading Background w/RR30
 			row--;
 
 			//initialize length of files
@@ -327,141 +330,6 @@ int exec(char prog[], int length) {
 			
 			return 0;
 		}
-/*
-		else if(strcmp(programs[row-1],"RR")==0)         //for round robin
-		{
-			
-			for(int i=0; i<row; i++) 
-			{
-				//printf("--%s--\n", programs[i]);
-				
-				int errCode = 0;
-				char line[1000];
-				for(int j=0; j<1000; j++) {
-					line[j] = '\0';
-				} 
-				FILE *p = fopen(programs[i], "rt"); // the program is in a file
-				if (p == NULL)	return badcommandFileDoesNotExist();
-				pcb_init();
-				fgets(line, 999, p);
-				length_Files[i]++; //increment length of each file
-				while (1) {
-					if (feof(p)) break;
-					// memset(line, '\0', sizeof(line));
-					fgets(line, 999, p);
-					// printf("---%s-----\n",line);
-					// if(strlen(line)==0) break;
-					length_Files[i]++;
-					count_total++; //count total number of commands from all files
-				}
-				
-				fclose(p);
-			}
-			
-			char all_commands[count_total][1000];
-			int all_commands_counter=0;
-			//int positions[count]; //holds indices of instructions needed for all files
-			int counter=0; //index
-			int file1=0;
-			int file2=0;
-			int file3=0;
-			int i=0;
-			int errCode = 0;
-			char line[1000];
-			FILE *p[row]; 
-			
-			
-			for(int j=0; j<1000; j++) {
-				line[j] = '\0';
-			}
-		
-			for(int j=0; j<row; j++) {
-				p[j] = fopen(programs[j], "rt"); //open upto 3 file pointers
-				if (p[j] == NULL)	return badcommandFileDoesNotExist();
-			}
-			pcb_init();
-			all_commands_counter=0;
-			while(1) {
-				switch (i) { //check 0th index
-					case 0:
-						for(int j=0; j<2; j++) { //check if two instructions exist in file
-							if((length_Files[i]-file1)>0 && counter<row) { //check if lines left to execute, check if right number of files				
-								if (feof(p[i])) break;
-								fgets(line, 999, p[i]);
-								strcpy(all_commands[all_commands_counter++],line); //pass upto two lines into temporary ready queue
-								//pcb_set_script(line); //pass line to pcb
-								
-								file1++;
-							}
-						} 
-						break;
-					
-					case 1:
-						for(int j=0; j<2; j++) {
-							if((length_Files[i]-file2)>0 && counter<row) { //check if lines left to execute, check if right number of files				
-								if (feof(p[i])) break;
-								fgets(line, 999, p[i]);
-								strcpy(all_commands[all_commands_counter++],line); //pass upto two lines into temporary ready queue
-								//pcb_set_script(line); //pass line to pcb
-								
-								file2++;
-							}
-						} 
-						break;
-					case 2:
-						for(int j=0; j<2; j++) {
-							if((length_Files[i]-file3)>0 && counter<row) { //check if lines left to execute, check if right number of files				
-								if (feof(p[i])) break;
-								fgets(line, 999, p[i]);
-								strcpy(all_commands[all_commands_counter++],line); //pass upto two lines into temporary ready queue
-								// pcb_set_script(line); //pass line to pcb
-								
-								file3++;
-							}
-						} 
-						break;
-				}
-				i++;
-				if(i>2) i=0; //restart from 0
-				int flag = 0;
-				for(int j=0; j<row; j++) {
-					if(!feof(p[j])) flag = 1;
-				}
-				
-				if(flag == 0) break;
-			}
-			// insert_queue();
-			// display_queue();
-			// cleanup();
-			for(int j=0; j<row; j++) fclose(p[j]);
-			//even elements
-			// void *program1(void *arg) 
-			// {
-			// 	int i;
-			// 	for (i = 0; i <count_total; i+=2) 
-			// 	{
-			// 		//printf("Program 1: %d %s\n", all_commands[i]);
-			// 	}
-			// 	pthread_exit(NULL);
-			// }
-			// //odd elements
-			// void *program2(void *arg) 
-			// {
-			// 	int i;
-			// 	for (i = 1; i < count_total; i+=2) 
-			// 	{
-			// 		//printf("Program 2: %d %s\n", i,all_commands[i]);
-			// 	}
-			// 	pthread_exit(NULL);
-			// }
-			// pthread_t thread1, thread2;
-			// pthread_create(&thread1, NULL, program1, NULL);
-			// pthread_create(&thread2, NULL, program2, NULL);
-			// pthread_join(thread1, NULL);
-			// pthread_join(thread2, NULL);	
-		}
-*/	
-	
 	} else if(strcmp(programs[row],"#")==0) { //Background Execution only
 		if(strcmp(programs[row-1], "SJF") == 0) { //Background w/SJF
 			row--;
