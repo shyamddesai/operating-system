@@ -1,5 +1,0 @@
-Shell version 1.2 Created January 2023
-
-Bad command: same file name
-Bad command: same file name 
-Bye!

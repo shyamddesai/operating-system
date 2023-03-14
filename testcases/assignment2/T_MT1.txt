@@ -1,2 +1,0 @@
-exec P_longP1 P_longP2 P_longP3 RR30 MT
-quit

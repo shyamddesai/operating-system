@@ -1,2 +1,0 @@
-exec P_prog1 P_prog2 P_prog3 AGING
-quit

@@ -1,3 +1,0 @@
-exec P_f1 P_f2 P_f3 RR
-exec P_f1 P_f2 P_f3 RR
-quit
