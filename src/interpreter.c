@@ -3,8 +3,11 @@
 #include <string.h> 
 #include <unistd.h> //new included library for chdir
 #include <sys/stat.h> //new included library for stat
+#include <stdbool.h>
 #include "shellmemory.h"
 #include "shell.h"
+#include "kernel.h"
+#include "ready_queue.h"
 
 int MAX_ARGS_SIZE = 7;
 
@@ -33,6 +36,48 @@ int badcommandCd(){
 	return 5;
 }
 
+int bad_command_file_does_not_exist(){
+	printf("%s\n", "Bad command: File not found");
+	return 1;
+}
+
+int badcommand_scheduling_policy_error(){
+	printf("%s\n", "Bad command: scheduling policy incorrect");
+	return 1;
+}
+
+int badcommand_no_mem_space(){
+	printf("%s\n", "Bad command: no space left in shell memory");
+	return 1;
+}
+
+int badcommand_ready_queue_full(){
+	printf("%s\n", "Bad command: ready queue is full");
+	return 1;
+}
+
+int badcommand_same_file_name(){
+	printf("%s\n", "Bad command: same file name");
+	return 1;
+}
+
+int handleError(int error_code){
+	//Note: badcommand-too-man-token(), badcommand(), and badcommand-same-file-name needs to be raised by programmer, not this function
+	if(error_code == 11){
+		return bad_command_file_does_not_exist();
+	}else if (error_code == 21)
+	{
+		return badcommand_no_mem_space();
+	}else if (error_code == 14)
+	{
+		return badcommand_ready_queue_full();
+	}else if (error_code == 15){
+		return badcommand_scheduling_policy_error();
+	}else{
+		return 0;
+	}
+}
+
 int help();
 int quit();
 int set(char* var, char* value);
@@ -43,6 +88,7 @@ int my_ls();
 int my_mkdir(char* dirname);
 int my_touch(char* filename);
 int my_cd(char* dirname);
+int exec(char *fname1, char *fname2, char *fname3, char* policy, bool background, bool mt);
 
 // Interpret commands and their arguments
 int interpreter(char* command_args[], int args_size){
@@ -115,7 +161,35 @@ int interpreter(char* command_args[], int args_size){
 		if (args_size > 2) return badcommand();
 		return my_cd(command_args[1]);
 	
-	} else return badcommand();
+	} else if (strcmp(command_args[0], "exec")==0) {
+		bool MT = false;
+		if(strcmp(command_args[args_size-1], "MT")==0){
+			MT=true;
+			args_size--;
+		}
+		if (args_size <= 2 || args_size >6) return badcommand();
+		if(strcmp(command_args[args_size-1], "#") !=0){
+			if(args_size == 3){
+				return exec(command_args[1],NULL,NULL,command_args[2], false, MT);
+			}else if(args_size == 4){
+				return exec(command_args[1],command_args[2],NULL,command_args[3], false, MT);
+			}else if(args_size == 5){
+				return exec(command_args[1],command_args[2],command_args[3],command_args[4], false, MT);
+			}
+		}
+		else{
+			if(args_size == 4){
+				return exec(command_args[1],NULL,NULL,command_args[2], true, MT);
+			}else if(args_size == 5){
+				return exec(command_args[1],command_args[2],NULL,command_args[3], true, MT);
+			}else if(args_size == 6){
+				return exec(command_args[1],command_args[2],command_args[3],command_args[4], true, MT);
+			}
+		}
+		
+	} else {
+		return badcommand();
+	}
 }
 
 int help(){
@@ -132,6 +206,8 @@ run SCRIPT.TXT		Executes the file SCRIPT.TXT\n ";
 
 int quit(){
 	printf("%s\n", "Bye!");
+	threads_terminate();
+	ready_queue_destory();
 	exit(0);
 }
 
@@ -151,22 +227,6 @@ int print(char* var){
 	if(value == NULL) value = "\n";
 	printf("%s\n", value); 
 	return 0;
-}
-
-int run(char* script){
-	int errCode = 0;
-	char line[1000];
-	FILE *p = fopen(script,"rt");  // the program is in a file
-	if(p == NULL) return badcommandFileDoesNotExist();
-	fgets(line,999,p);
-	while(1){
-		errCode = parseInput(line);	// which calls interpreter()
-		memset(line, 0, sizeof(line));
-		if(feof(p)) break;
-		fgets(line,999,p);
-	}
-    fclose(p);
-	return errCode;
 }
 
 int echo(char* var){
@@ -216,4 +276,56 @@ int my_cd(char* dirname){
 		return errCode;
 	}
 	return badcommandCd();
+}
+
+
+int run(char* script){
+	//errCode 11: bad command file does not exist
+	int errCode = 0;
+	//load script into shell
+	errCode = process_initialize(script);
+	if(errCode == 11){
+		return handleError(errCode);
+	}
+	//run with FCFS
+	schedule_by_policy("FCFS", false);
+	return errCode;
+}
+
+int exec(char *fname1, char *fname2, char *fname3, char* policy, bool background, bool mt){
+	if(fname2!=NULL){
+		if(strcmp(fname1,fname2)==0){
+			return badcommand_same_file_name();
+		}
+	}
+	if(fname3!=NULL){
+		if(strcmp(fname1,fname3)==0 || strcmp(fname2,fname3)==0){
+			return badcommand_same_file_name();
+		}
+		
+	}
+	int error_code = 0;
+	if(background) error_code = shell_process_initialize();
+	if(fname1 != NULL){
+        error_code = process_initialize(fname1);
+		if(error_code != 0){
+			return handleError(error_code);
+		}
+    }
+    if(fname2 != NULL){
+        error_code = process_initialize(fname2);
+		if(error_code != 0){
+			return handleError(error_code);
+		}
+    }
+    if(fname3 != NULL){
+        error_code = process_initialize(fname3);
+		if(error_code != 0){
+			return handleError(error_code);
+		}
+    } 
+	error_code = schedule_by_policy(policy, mt);
+	if(error_code==15){
+		return handleError(error_code);
+	}
 }
