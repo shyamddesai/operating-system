@@ -310,10 +310,10 @@ int exec(char prog[], int length) {
 			
 				fclose(p);
 			}
-			
+
 			pthread_t threads[2];
 			for (int i=0; i<2; i++) {
-				int start = i*3;
+				int start = i*2;
 
 				pthread_create(&threads[i], NULL, read_file, (void*) programs[start]);
 				if (start+1 < row)	pthread_create(&threads[i], NULL, read_file, (void*) programs[start+1]);
@@ -384,7 +384,6 @@ int exec(char prog[], int length) {
 			row--;
 
 			int positions[row]; //holds indices of instructions needed for all files
-			int count = 0;
 			int counter=0; //index
 			int file1=0;
 			int file2=0;
@@ -567,7 +566,6 @@ int exec(char prog[], int length) {
 		if(strcmp(programs[row], "RR") == 0) { //No Background w/RR
 			int positions[row]; //holds indices of instructions needed for all files
 			int counter=0; //index
-			int count = 0;
 			int file1=0;
 			int file2=0;
 			int file3=0;
@@ -618,7 +616,6 @@ int exec(char prog[], int length) {
 		if(strcmp(programs[row], "RR30") == 0) { //No Background w/RR30
 			int positions[row]; //holds indices of instructions needed for all files
 			int counter=0; //index
-			int count = 0;
 			int file1=0;
 			int file2=0;
 			int file3=0;
@@ -812,8 +809,8 @@ void* read_file(void* filename) {
 		if (feof(fp)) break;
 		fgets(line, 999, fp);
 		
-		if(strlen(line)==0) break;
-		pcb_set_script(line);
+		if(strlen(line) == 0) break;
+		pcb_set_script_multithreading(line);
 	}
 
     fclose(fp);
