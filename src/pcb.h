@@ -1,8 +1,25 @@
-void pcb_init();
-void pcb_set_script_multithreading(char script[]);
-void pcb_set_script(char script[]);
-void pcb_set_value(int address, int length);
-void print_script_commands();
-void insert_queue();
-void display_queue();
-void cleanup();
+#ifndef PCB_H
+#define PCB_H
+#include <stdbool.h>
+/*
+ * Struct:  PCB 
+ * --------------------
+ * pid: process(task) id
+ * PC: program counter, stores the index of line that the task is executing
+ * start: the first line in shell memory that belongs to this task
+ * end: the last line in shell memory that belongs to this task
+ * job_length_score: for EXEC AGING use only, stores the job length score
+ */
+typedef struct
+{
+    bool priority;
+    int pid;
+    int PC;
+    int start;
+    int end;
+    int job_length_score;
+}PCB;
+
+int generatePID();
+PCB * makePCB(int start, int end);
+#endif
