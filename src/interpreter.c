@@ -8,6 +8,7 @@
 #include "shell.h"
 #include "kernel.h"
 #include "ready_queue.h"
+#include "back_store.h"
 
 int MAX_ARGS_SIZE = 7;
 
@@ -207,7 +208,7 @@ run SCRIPT.TXT		Executes the file SCRIPT.TXT\n ";
 int quit(){
 	printf("%s\n", "Bye!");
 	threads_terminate();
-	ready_queue_destory();
+	//ready_queue_destroy();
 	exit(0);
 }
 
@@ -293,7 +294,55 @@ int run(char* script){
 }
 
 int exec(char *fname1, char *fname2, char *fname3, char* policy, bool background, bool mt){
+	int prog_count=0;
+	char prog_name[5][100];
+	/*if(fname1!=NULL){
+		load_script(fname1);
+		strcpy(prog_name[prog_count],fname1);
+		prog_count++;
+	}
 	if(fname2!=NULL){
+		load_script(fname2);
+		strcpy(prog_name[prog_count],fname2);
+		prog_count++;
+	}
+	if(fname3!=NULL){
+		load_script(fname3);
+		strcpy(prog_name[prog_count],fname3);
+		prog_count++;
+		
+	}*/
+	
+	
+	if(fname1 != NULL){
+		strcpy(prog_name[prog_count], "file1");
+		load_script(fname1, "file1");
+		prog_count++;
+	}
+
+	if(fname2 != NULL){
+		strcpy(prog_name[prog_count], "file2");
+		load_script(fname2, "file2");
+		prog_count++;
+	}
+
+	if(fname3 != NULL){
+		strcpy(prog_name[prog_count], "file3");
+		load_script(fname3, "file3");
+		prog_count++;
+	}
+	
+	int counter = load_frame(prog_name, prog_count);
+	// rr_function(prog_name, prog_count, counter);
+	int total_size = load_main_function(prog_name, prog_count, counter);
+	
+	printf("\n----Frame Store----\n");
+	disp_main_function(total_size);
+	
+	printf("RR\n");
+	rr_function(prog_name, prog_count, counter);
+	
+	/*if(fname2!=NULL){
 		if(strcmp(fname1,fname2)==0){
 			return badcommand_same_file_name();
 		}
@@ -327,5 +376,5 @@ int exec(char *fname1, char *fname2, char *fname3, char* policy, bool background
 	error_code = schedule_by_policy(policy, mt);
 	if(error_code==15){
 		return handleError(error_code);
-	}
+	}*/
 }

@@ -7,6 +7,7 @@
 #include "pcb.h"
 #include "kernel.h"
 #include "shell.h"
+#include "back_store.h"
 
 int MAX_USER_INPUT = 1000;
 int parseInput(char ui[]);
@@ -14,7 +15,7 @@ int parseInput(char ui[]);
 int main(int argc, char *argv[]) {
 	printf("%s\n", "Shell version 1.2 Created January 2023\n");
 
-	char prompt = '$';  				// Shell prompt
+    char prompt = '$';  				// Shell prompt
 	char userInput[MAX_USER_INPUT];		// user's input stored here
 	int errorCode = 0;					// zero means no error, default
 
@@ -24,6 +25,9 @@ int main(int argc, char *argv[]) {
 	
 	//init shell memory
 	mem_init();
+
+    //init backing store
+    initialize_backing_store();
 
 	while(1) {						
         if (isatty(fileno(stdin))) printf("%c ",prompt);
