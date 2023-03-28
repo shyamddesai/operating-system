@@ -13,6 +13,7 @@
 int programs_loc[3][2];
 char frameStore[FRAME_STORE_SIZE][100];
 char main_frame_Store[FRAME_STORE_SIZE][MAX_LINE_SIZE];
+int cache_status[FRAME_STORE_SIZE]; //keep track of processed commands
 
 //Function Prototypes
 void initialize_backing_store();
@@ -136,6 +137,7 @@ int load_frame(char file_array[5][100], int total_programs) {
 						counter++;
 						count_lines++;
 						col=0;
+						j+=2; //skip ;
 					}
 
 					if(chunk[j] != '\n') frameStore[counter][col++] = chunk[j];
@@ -171,21 +173,25 @@ void rr_function(char file_array[5][100], int prog_count, int counter) {
 	while((tot)<counter) {
 		if(c1 < programs_loc[0][0]+programs_loc[0][1]) {
 			for(int i=0; i<2 && c1<programs_loc[0][0]+programs_loc[0][1]; i++) {
-				printf("%s\n",frameStore[c1++]);
+				if(read_cache (frameStore[c1]) == 0) cache_status[tot] = 1; //line processed
+				
+				printf("%s\n", frameStore[c1++]);
 				tot++;
 			}
 		}
 
 		if(c2 < programs_loc[1][0]+programs_loc[1][1]) {
 			for(int i=0; i<2 && c2<programs_loc[1][0]+programs_loc[1][1];i++) {
-				printf("%s\n",frameStore[c2++]);
+				if(read_cache (frameStore[c2]) == 0) cache_status[tot] = 1; //line processed
+				printf("%s\n", frameStore[c2++]);
 				tot++;
 			}
 		}
 
 		if(c3 < programs_loc[2][0]+programs_loc[2][1]) {
 			for(int i=0; i<2 && c3<programs_loc[2][0]+programs_loc[2][1];i++) {
-				printf("%s\n",frameStore[c3++]);
+				if(read_cache (frameStore[c33]) == 0) cache_status[tot] = 1; //line processed
+				printf("%s\n", frameStore[c3++]);
 				tot++;
 			}
 		}
@@ -204,8 +210,10 @@ int load_main_function(char file_array[5][100], int prog_count, int counter) {
 			for(int i=0; i<3; i++) {
 				if(c1 < programs_loc[0][0]+programs_loc[0][1]) {
 					strcpy(main_frame_Store[tot],frameStore[c1++]);
+					cache_status[tot] = 0;
 				} else {
 					strcpy(main_frame_Store[tot],"\0");
+					cache_status[tot] = 0;
 				}
 				//strcat(main_frame_Store[tot],
 				//printf("%s\n",frameStore[c1++]);
@@ -219,8 +227,10 @@ int load_main_function(char file_array[5][100], int prog_count, int counter) {
 			for(int i=0; i<3; i++) {
 				if(c2 < programs_loc[1][0]+programs_loc[1][1]) {
 					strcpy(main_frame_Store[tot],frameStore[c2++]);
+					cache_status[tot] = 0;
 				} else {
 					strcpy(main_frame_Store[tot],"\0");
+					cache_status[tot] = 0;
 				}
 				//strcpy(frame[page].lines[i],frameStore[c2++]);
 				//printf("%s\n",frameStore[c2++]);
@@ -232,8 +242,10 @@ int load_main_function(char file_array[5][100], int prog_count, int counter) {
 			for(int i=0; i<3; i++) {
 				if(c3 < programs_loc[2][0]+programs_loc[2][1]) {
 					strcpy(main_frame_Store[tot],frameStore[c3++]);
+					cache_status[tot] = 0;
 				} else {
 					strcpy(main_frame_Store[tot],"\0");
+					cache_status[tot] = 0;
 				}
 				//strcpy(frame[page].lines[i],frameStore[c3++]);
 				//printf("%s\n",frameStore[c3++]);
@@ -245,6 +257,15 @@ int load_main_function(char file_array[5][100], int prog_count, int counter) {
 	}
 
 	return tot;
+}
+
+int read_cache (char command[30]) {
+	for(int i=0; i<FRAME_STORE_SIZE; i++) {
+		if(strcmp(main_frame_Store[i], command) == 0) return 0;
+	}
+
+	//printf("Page fault! Victim page contents:\n");
+	return 1; //page fault occurred
 }
 
 void disp_main_function(int tot) {

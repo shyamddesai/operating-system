@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=
+CFLAGS= -D framesize=$(X) -D varmemsize=$(Y)
 
 mysh: shell.c interpreter.c shellmemory.c
 	$(CC) $(CFLAGS) -c shell.c interpreter.c shellmemory.c kernel.c pcb.c ready_queue.c back_store.c -lpthread

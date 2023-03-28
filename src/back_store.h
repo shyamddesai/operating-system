@@ -29,5 +29,6 @@ void load_script(char* script_file, char* fileName );
 int load_frame(char file_array[5][100], int total_programs);
 void rr_function(char file_array[5][100], int prog_count, int counter);
 int  load_main_function(char file_array[5][100], int prog_count, int counter);
+int read_cache (char command[]);
 void disp_main_function(int tot);
 #endif

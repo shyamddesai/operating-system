@@ -339,7 +339,7 @@ int exec(char *fname1, char *fname2, char *fname3, char* policy, bool background
 	printf("\n----Frame Store----\n");
 	disp_main_function(total_size);
 	
-	printf("RR\n");
+	printf("\nRR\n");
 	rr_function(prog_name, prog_count, counter);
 	
 	/*if(fname2!=NULL){
