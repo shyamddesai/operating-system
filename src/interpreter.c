@@ -316,7 +316,7 @@ int exec(char *fname1, char *fname2, char *fname3, char* policy, bool background
 	
 	if(fname1 != NULL){
 		strcpy(prog_name[prog_count], "file1");
-		load_script(fname1, "file1");
+		load_script(fname1, "file1"); //load into backstore
 		prog_count++;
 	}
 
@@ -331,16 +331,40 @@ int exec(char *fname1, char *fname2, char *fname3, char* policy, bool background
 		load_script(fname3, "file3");
 		prog_count++;
 	}
-	
+
+	printf("\nLoad Frame Store\n");
 	int counter = load_frame(prog_name, prog_count);
 	// rr_function(prog_name, prog_count, counter);
+
 	int total_size = load_main_function(prog_name, prog_count, counter);
 	
 	printf("\n----Frame Store----\n");
-	disp_main_function(total_size);
+	disp_main_frame_store();
 	
 	printf("\nRR\n");
-	rr_function(prog_name, prog_count, counter);
+	int fno=rr_function(prog_name, prog_count, counter);
+	
+	printf("\nMain Store "); 
+	disp_main_frame_store();
+	
+	printf("\nDemand");
+	int tot = demand_page_replacement(prog_name,prog_count,counter,fno);
+	printf("total: %d\n", tot);
+	
+	printf("\nQueue\n");
+	queue_elements();
+
+	printf("\n----Frame Store----\n");
+	disp_main_frame_store();
+
+	printf("\nRR\n");
+	fno = rr_function(prog_name, prog_count, counter);
+
+	//int total_size = load_main_function(prog_name, prog_count, counter);
+	//int fno=rr_function1(prog_name, prog_count, counter,fno);
+	
+	
+	// }while(total_size<counter);
 	
 	/*if(fname2!=NULL){
 		if(strcmp(fname1,fname2)==0){
