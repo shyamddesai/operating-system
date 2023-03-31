@@ -296,23 +296,6 @@ int run(char* script){
 int exec(char *fname1, char *fname2, char *fname3, char* policy, bool background, bool mt){
 	int prog_count=0;
 	char prog_name[5][100];
-	/*if(fname1!=NULL){
-		load_script(fname1);
-		strcpy(prog_name[prog_count],fname1);
-		prog_count++;
-	}
-	if(fname2!=NULL){
-		load_script(fname2);
-		strcpy(prog_name[prog_count],fname2);
-		prog_count++;
-	}
-	if(fname3!=NULL){
-		load_script(fname3);
-		strcpy(prog_name[prog_count],fname3);
-		prog_count++;
-		
-	}*/
-	
 	
 	if(fname1 != NULL){
 		strcpy(prog_name[prog_count], "file1");
@@ -332,73 +315,30 @@ int exec(char *fname1, char *fname2, char *fname3, char* policy, bool background
 		prog_count++;
 	}
 
-	printf("\nLoad Frame Store\n");
+	printf("Load Frame Store\n");
 	int counter = load_frame(prog_name, prog_count);
-	// rr_function(prog_name, prog_count, counter);
 
 	int total_size = load_main_function(prog_name, prog_count, counter);
-	
-	printf("\n----Frame Store----\n");
+	printf("Counter = %d\n",counter);	
+	printf("\n----Frame Store----");
 	disp_main_frame_store();
 	
-	printf("\nRR\n");
+	printf("\n\nRR");
 	int fno=rr_function(prog_name, prog_count, counter);
-	
-	printf("\nMain Store "); 
+	printf("Counter = %d\n", counter);	
+	printf("\nMain Store"); 
 	disp_main_frame_store();
+
+	//Version 2
+	printf("Counter = %d\n", counter);
+	printf("Load Main Store\n");
+	int total_size1 = load_main_function1(prog_name, prog_count, counter);
 	
-	printf("\nDemand");
-	int tot = demand_page_replacement(prog_name,prog_count,counter,fno);
-	printf("total: %d\n", tot);
-	
-	printf("\nQueue\n");
+	printf("\nQueue");
 	queue_elements();
-
-	printf("\n----Frame Store----\n");
-	disp_main_frame_store();
-
-	printf("\nRR\n");
-	fno = rr_function(prog_name, prog_count, counter);
-
-	//int total_size = load_main_function(prog_name, prog_count, counter);
-	//int fno=rr_function1(prog_name, prog_count, counter,fno);
 	
+	printf("\n\nMain Store");
+	disp_main_frame_store1();
 	
-	// }while(total_size<counter);
-	
-	/*if(fname2!=NULL){
-		if(strcmp(fname1,fname2)==0){
-			return badcommand_same_file_name();
-		}
-	}
-	if(fname3!=NULL){
-		if(strcmp(fname1,fname3)==0 || strcmp(fname2,fname3)==0){
-			return badcommand_same_file_name();
-		}
-		
-	}
-	int error_code = 0;
-	if(background) error_code = shell_process_initialize();
-	if(fname1 != NULL){
-        error_code = process_initialize(fname1);
-		if(error_code != 0){
-			return handleError(error_code);
-		}
-    }
-    if(fname2 != NULL){
-        error_code = process_initialize(fname2);
-		if(error_code != 0){
-			return handleError(error_code);
-		}
-    }
-    if(fname3 != NULL){
-        error_code = process_initialize(fname3);
-		if(error_code != 0){
-			return handleError(error_code);
-		}
-    } 
-	error_code = schedule_by_policy(policy, mt);
-	if(error_code==15){
-		return handleError(error_code);
-	}*/
+	printf("\n\nRR\n");
 }

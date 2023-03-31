@@ -18,11 +18,6 @@ typedef struct Variable {
     struct Variable* next;  // pointer to the next variable in the linked list
 } Variable;
 
-// Pointer to the head of the linked list representing the variable store
-// Variable* varStoreHead = NULL;
-// Array of frames to represent the frame store
-// Frame frameStore[FRAME_STORE_SIZE];
-
 void initialize_backing_store();
 void cleanup_backing_store();
 void load_script(char* script_file, char* fileName );
@@ -36,4 +31,10 @@ int rr_function1(char file_array[5][100], int prog_count, int counter,int t);
 void queue_elements();
 void add_to_queue(char line[MAX_LINE_SIZE]);
 void disp_main_frame_store();
+void disp_main_frame_store1();
+void fun_after_demand();
+int demand_frame1_replacement(char file_array[5][100], int prog_count, int counter, int fno);
+void remove_from_queue();
+void remove_element(char line[100]);
+int load_main_function1(char file_array[5][100], int prog_count, int counter);
 #endif
