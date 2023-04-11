@@ -284,18 +284,36 @@ int run(char* script){
 	//errCode 11: bad command file does not exist
 	int errCode = 0;
 	//load script into shell
-	errCode = process_initialize(script);
-	if(errCode == 11){
-		return handleError(errCode);
-	}
+	exec(script,NULL,NULL,NULL,0,0);
+	// errCode = process_initialize(script);
+	// if(errCode == 11){
+		// return handleError(errCode);
+	// }
 	//run with FCFS
-	schedule_by_policy("FCFS", false);
+	// schedule_by_policy("FCFS", false);
 	return errCode;
 }
 
 int exec(char *fname1, char *fname2, char *fname3, char* policy, bool background, bool mt){
 	int prog_count=0;
 	char prog_name[5][100];
+	/*if(fname1!=NULL){
+		load_script(fname1);
+		strcpy(prog_name[prog_count],fname1);
+		prog_count++;
+	}
+	if(fname2!=NULL){
+		load_script(fname2);
+		strcpy(prog_name[prog_count],fname2);
+		prog_count++;
+	}
+	if(fname3!=NULL){
+		load_script(fname3);
+		strcpy(prog_name[prog_count],fname3);
+		prog_count++;
+		
+	}*/
+	
 	
 	if(fname1 != NULL){
 		strcpy(prog_name[prog_count], "file1");
@@ -315,30 +333,132 @@ int exec(char *fname1, char *fname2, char *fname3, char* policy, bool background
 		prog_count++;
 	}
 
-	printf("Load Frame Store\n");
+	
 	int counter = load_frame(prog_name, prog_count);
-
+	
+	
+	
 	int total_size = load_main_function(prog_name, prog_count, counter);
-	printf("Counter = %d\n",counter);	
-	printf("\n----Frame Store----");
-	disp_main_frame_store();
+	// printf("\n counter=%d",counter);
+    // printf("\n total size filled =%d",total_size);	
+	// printf("\n----Frame Store----\n");
+	//remove_from_queue();
+	//remove_visited_element();
+	int c=count_queue_elements();
+	// printf("total ele n quee->%d",c);
+	if(c==0)return 1;
+	//disp_main_frame_store();
 	
-	printf("\n\nRR");
-	int fno=rr_function(prog_name, prog_count, counter);
-	printf("Counter = %d\n", counter);	
-	printf("\nMain Store"); 
-	disp_main_frame_store();
-
-	//Version 2
-	printf("Counter = %d\n", counter);
-	printf("Load Main Store\n");
+	// printf("\nRR\n");
+//	int fno=rr_function(counter);
+//	printf("\n total=%d",fno);	
+//	printf("\nMain Store "); 
+//	disp_main_frame_store();
+	////second version
+																	// printf("\n----run after demand----\n");
+																	// fun_after_demand(total_size1); // t
+	// printf("\n counter=%d",counter);
+	// printf("\n load mainstore 1\n");
 	int total_size1 = load_main_function1(prog_name, prog_count, counter);
+	// printf("\nQueue\n");
+	// queue_elements();
+	// printf("\n displaying main store1");
+	// disp_main_frame_store1();
+	if(FRAME_STORE_SIZE==21){
+	// printf("\n----run after demand----\n");
 	
-	printf("\nQueue");
+	fun_after_demand(total_size1);} 
+	
+	remove_from_queue();
+	if(count_queue_elements()>0)return 1;
+	// this function interperates all command in que an set status to 1 fo them
+//	printf("\nRR\n");
+	
+	//prev version 
+	
+	//int fno1=rr_function1(prog_name, prog_count, counter,total_size1);
+		// printf("\n-----Main Store ");
+	// disp_main_frame_store();
+	
+	
+	// printf("\n----Frame Store----\n");
+	// disp_main_frame_store();
+	// printf("\nDemand------");
+	int tot = demand_page_replacement(prog_name,prog_count,counter,total_size1);
+	// printf("total: %d\n", tot);
+	// printf("\n----Frame Store----\n");
+	// disp_main_frame_store();
+	
+	// printf("\nQueue\n");
+	// queue_elements();
+
+	 // printf("\n----Frame Store BEFORE----\n");
+	 // disp_main_frame_store();
+	
+	// printf("\n----run after demand----\n");
+	fun_after_demand(total_size1); // this function interperates all command in que an set status to 1 fo them
+	
+	// printf("\n----Frame Store AFTER DEAMAND----\n");
+	
+	// disp_main_frame_store();
+	/*printf("\nRR\n");
+	
+	printf("\nDemand for 1 frame\n");
+	tot = demand_frame1_replacement(tot);
+	
+	printf("\nnow Romoving processed element from queue\n");
+	remove_from_queue();
+	printf("\nQueue\n");
 	queue_elements();
 	
-	printf("\n\nMain Store");
-	disp_main_frame_store1();
+	printf("\n----Frame Store----\n");
+	disp_main_frame_store();*/
 	
-	printf("\n\nRR\n");
+	
+	
+	
+
+//	fno = rr_function(prog_name, prog_count, counter);
+
+	//int total_size = load_main_function(prog_name, prog_count, counter);
+	//int fno=rr_function1(prog_name, prog_count, counter,fno);
+	
+	
+	// }while(total_size<counter);
+	
+	/*if(fname2!=NULL){
+		if(strcmp(fname1,fname2)==0){
+			return badcommand_same_file_name();
+		}
+	}
+	if(fname3!=NULL){
+		if(strcmp(fname1,fname3)==0 || strcmp(fname2,fname3)==0){
+			return badcommand_same_file_name();
+		}
+		
+	}
+	int error_code = 0;
+	if(background) error_code = shell_process_initialize();
+	if(fname1 != NULL){
+        error_code = process_initialize(fname1);
+		if(error_code != 0){
+			return handleError(error_code);
+		}
+    }
+    if(fname2 != NULL){
+        error_code = process_initialize(fname2);
+		if(error_code != 0){
+			return handleError(error_code);
+		}
+    }
+    if(fname3 != NULL){
+        error_code = process_initialize(fname3);
+		if(error_code != 0){
+			return handleError(error_code);
+		}
+    } 
+	error_code = schedule_by_policy(policy, mt);
+	if(error_code==15){
+		return handleError(error_code);
+	}*/
 }
