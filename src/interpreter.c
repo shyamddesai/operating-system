@@ -333,44 +333,57 @@ int exec(char *fname1, char *fname2, char *fname3, char* policy, bool background
 		prog_count++;
 	}
 
+
 	
-	int counter = load_frame(prog_name, prog_count);
-	
-	
-	
+	int counter = load_frame(prog_name, prog_count);	
+
+	//disp_main_function(counter);
+
 	int total_size = load_main_function(prog_name, prog_count, counter);
+
+	//disp_main_function(counter);
+
 	// printf("\n counter=%d",counter);
     // printf("\n total size filled =%d",total_size);	
 	// printf("\n----Frame Store----\n");
 	//remove_from_queue();
 	//remove_visited_element();
+
 	int c=count_queue_elements();
 	// printf("total ele n quee->%d",c);
 	if(c==0)return 1;
+	
 	//disp_main_frame_store();
 	
-	// printf("\nRR\n");
+	  // printf("\nRR\n");
 //	int fno=rr_function(counter);
 //	printf("\n total=%d",fno);	
 //	printf("\nMain Store "); 
-//	disp_main_frame_store();
+	//disp_main_frame_store();
 	////second version
-																	// printf("\n----run after demand----\n");
-																	// fun_after_demand(total_size1); // t
+	// printf("\n----run after demand----\n");
+	// fun_after_demand(total_size1); // t
 	// printf("\n counter=%d",counter);
 	// printf("\n load mainstore 1\n");
 	int total_size1 = load_main_function1(prog_name, prog_count, counter);
-	// printf("\nQueue\n");
-	// queue_elements();
+	//   printf("\nQueue\n");
+	//  queue_elements();
 	// printf("\n displaying main store1");
-	// disp_main_frame_store1();
+	 // disp_main_frame_store1();
 	if(FRAME_STORE_SIZE==21){
 	// printf("\n----run after demand----\n");
 	
 	fun_after_demand(total_size1);} 
-	
+	else{
+		
+		fun_after_demand1(total_size1);
+		
+		if(count_queue_elements()==0)return 1;
+	}
 	remove_from_queue();
-	if(count_queue_elements()>0)return 1;
+	if(count_queue_elements()==0)return 1;
+	
+	
 	// this function interperates all command in que an set status to 1 fo them
 //	printf("\nRR\n");
 	

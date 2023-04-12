@@ -38,12 +38,13 @@ void add_to_queue(char line[MAX_LINE_SIZE]);
 void disp_main_frame_store();
 void disp_main_frame_store1();
 void fun_after_demand(int t);
-int load_main_function2(int prog_count, int counter);
+void fun_after_demand1(int t);
 int demand_frame1_replacement(int fno);
 void remove_from_queue();
-void remove_element(char line[100]);
-int find_cache (char command[30]);
 int load_main_function1(char file_array[5][100], int prog_count, int counter);
 int count_queue_elements();
 void remove_visited_element();
+int load_main_function2(int prog_count, int counter);
+void remove_element(char line[100]);
+int find_cache (char command[30]);
 #endif

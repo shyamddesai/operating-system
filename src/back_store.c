@@ -23,12 +23,6 @@ int gc1_main=0,gc2_main=0,gc3_main=0;
 int main_counter=0;
 int program_count=0;
 
-//Function Prototypes
-void initialize_backing_store();
-void cleanup_backing_store();
-void load_script(char* script_file, char* fileName );
-int load_frame(char file_array[5][100], int total_programs);
-
 // char main_frame_Store[FRAME_STORE_SIZE][MAX_LINE_SIZE];
 //int rr_function(char file_array[5][100], int prog_count, int counter);
 int  load_main_function(char file_array[5][100], int prog_count, int counter);
@@ -164,13 +158,13 @@ int load_frame(char file_array[5][100], int total_programs) {
 		}
 	}
 
-	/*for(int i=0; i<total_programs; i++) {
-		printf("program %d--> %d lines\n", programs_loc[i][0], programs_loc[i][1]);
-	}
+	// for(int i=0; i<total_programs; i++) {
+	// 	printf("program %d--> %d lines\n", programs_loc[i][0], programs_loc[i][1]);
+	// }
 
-	for(int j=0; j<counter; j++) {
-		printf("frame: --%s--\n", frameStore[j]);
-	}*/
+	// for(int j=0; j<counter; j++) {
+	// 	printf("frame: --%s--\n", frameStore[j]);
+	// }
 main_counter=counter;
 	return counter;	
 }
@@ -201,13 +195,15 @@ int rr_function(int counter) {
 
 	int flag=0;
 	
+	//disp_main_frame_store();
+
 	while(tot<counter){
 		if(c1 < c1_end) {
 			for(int i=0; i<2 && c1<c1_end; i++) {
 				
 				if(read_cache (frameStore[c1]) == 0&& flag==0) 
 				{
-					// printf("found %s\n", frameStore[c1]);
+					//printf("found %s\n", frameStore[c1]);
 					t++;
 					cache_status[tot] = 1; //line processed
 					 int errorCode = parseInput(frameStore[c1]);
@@ -216,7 +212,7 @@ int rr_function(int counter) {
 				else
 				{
 					flag=1;
-					// printf("\n---1%s---%d\n",frameStore[c1],tot);
+					//printf("\n---1%s---%d\n",frameStore[c1],tot);
 					add_to_queue(frameStore[c1]);
 					
 					
@@ -305,7 +301,7 @@ int rr_function(int counter) {
 int load_main_function(char file_array[5][100], int prog_count, int counter) {
 	int tot = 0;
 	int c1=0,c2=0,c3=0,c1_end=0,c2_end=0,c3_end=0;
-	//printf("\n prog_count=%d\n",prog_count);
+	// printf("\n prog_count=%d\n",prog_count);
 	 c1 = programs_loc[0][0];
 	 c1_end=c1+programs_loc[0][1];
 	if(prog_count==2){
@@ -467,7 +463,9 @@ int load_main_function(char file_array[5][100], int prog_count, int counter) {
 }
 
 int read_cache (char command[30]) {
+	
 	for(int i=0; i<FRAME_STORE_SIZE; i++) {
+		if(cache_status[i]==0)
 		if(strcmp(main_frame_Store[i], command) == 0 ){
 			cache_status[i]=1;
 			return 0;
@@ -480,7 +478,7 @@ int read_cache (char command[30]) {
 
 void disp_main_function(int tot) {
 	for(int i=0; i<tot; i++) {
-		printf("%s-->%d\n",main_frame_Store[i],cache_pageno[i]);
+		printf("%s-->%d\n",frameStore[i],cache_pageno[i]);
 	}
 }
 
@@ -498,7 +496,7 @@ int demand_page_replacement(char file_array[5][100], int prog_count, int counter
 	while(page<1) {
 		
 		if(c1 < programs_loc[0][0]+programs_loc[0][1]) {
-			printf("\nPage fault! Victim page contents:\n\n");
+			printf("Page fault! Victim page contents:\n\n");
 			
 			//frame[page].fileNumber=0;
 			//frame[page].isLoadedMemory=0;
@@ -520,7 +518,7 @@ int demand_page_replacement(char file_array[5][100], int prog_count, int counter
 		
 
 		if(c2 < programs_loc[1][0]+programs_loc[1][1]) {
-			printf("\nPage fault! Victim page contents:\n\n");
+			printf("Page fault! Victim page contents:\n\n");
 			
 			//frame[page].fileNumber=1;
 			//frame[page].isLoadedMemory=0;
@@ -541,7 +539,7 @@ int demand_page_replacement(char file_array[5][100], int prog_count, int counter
 		}
 
 		if(c3 < programs_loc[2][0]+programs_loc[2][1]) {
-			printf("\nPage fault! Victim page contents:\n\n");
+			printf("Page fault! Victim page contents:\n\n");
 			
 			for(int i=0; i<3; i++) {
 				if(c3 < programs_loc[2][0]+programs_loc[2][1]) {
@@ -671,7 +669,7 @@ void queue_elements()
 }
 void disp_main_frame_store()
 {
-	for(int i=0;i<FRAME_STORE_SIZE;i++)
+	for(int i=0;i<main_counter;i++)
 	{
 		printf("\n%s -- status-> %d --- pageno -->%d ",main_frame_Store[i],cache_status[i],cache_pageno[i]);
 	}
@@ -704,10 +702,10 @@ int flag=0;
 			strcpy(ptr->name,ptr->next->name);
 			strcpy(ptr->next->name,temp);
 			
-			printf("\n%s with %s",temp,ptr->name);
+			//printf("\n%s with %s",temp,ptr->name);
 			}			
 			//move_end(ptr);
-			printf("\nPage fault! Victim page contents:\n\n");
+			printf("Page fault! Victim page contents:\n\n");
 			for(int i=counter;i<(counter+3);i++)
 			{
 				printf("%s\n",main_frame_Store[i]);
@@ -721,8 +719,9 @@ int flag=0;
 		}
 		if(flag==0)
 		ptr=ptr->next;
-		
-		if(counter==FRAME_STORE_SIZE)
+		remove_from_queue();
+		if(count_queue_elements()==0)return ;
+		if(counter==FRAME_STORE_SIZE )
 		{
 			printf("\n now counter=0\n\n");
 			counter=0;
@@ -744,8 +743,84 @@ int flag=0;
 		
 		 
 	}
-	printf("\n at the exit now displaying main frame\n");
-	disp_main_frame_store();
+	// printf("\n at the exit now displaying main frame\n");
+	//disp_main_frame_store();
+	
+}
+void fun_after_demand1(int t)
+{ int counter=0; 
+// if(FRAME_STORE_SIZE==21)
+	// counter=0;
+// else
+	// counter=9;
+int flag=0;
+	struct Variable* ptr=front;
+	while (ptr)
+	{
+		// printf("\n counter-%d\n",counter);
+		if(read_cache(ptr->name)==0)
+		{
+			// printf("command: %s\n", ptr->name);
+			int errorCode = parseInput(ptr->name);
+				if (errorCode == -1) exit(99);
+			
+			flag=0;
+		}
+		else{
+		
+			flag=1;
+			if(FRAME_STORE_SIZE==21)
+			{	
+			char temp[30];
+			strcpy(temp,ptr->name);
+			strcpy(ptr->name,ptr->next->name);
+			strcpy(ptr->next->name,temp);
+			
+			//printf("\n%s with %s",temp,ptr->name);
+			}			
+			//move_end(ptr);
+			printf("Page fault! Victim page contents:\n\n");
+			for(int i=counter;i<(counter+3);i++)
+			{
+				printf("%s\n",main_frame_Store[i]);
+				strcpy(main_frame_Store[i],main_frame_Store1[i]);
+				cache_status[i]=0;
+				
+			}
+			printf("\nEnd of victim page contents.\n");
+			counter+=3;
+			
+		}
+		if(flag==0)
+		{
+		ptr=ptr->next;
+		}
+		remove_from_queue();
+		if(count_queue_elements()==0)return ;
+		if(counter==FRAME_STORE_SIZE && FRAME_STORE_SIZE==21)
+		{
+			// printf("\n now counter=0\n\n");
+			counter=0;
+			
+			// printf("\n now displaying queue elment\n");
+			// queue_elements();
+			
+			//disp_main_frame_store();
+			//printf("\n now removing visited nodes");
+			remove_from_queue();
+			//printf("\n displaying frame main1\n");
+			//disp_main_frame_store1();
+			//printf("\n updating frame main2\n");
+			load_main_function2(3, t); 
+			//printf("\n displaying frame main updated\n");
+			//disp_main_frame_store1();
+			ptr=front;
+		}
+		
+		 
+	}
+	// printf("\n at the exit now displaying main frame\n");
+	// disp_main_frame_store();
 	
 }
 
@@ -923,7 +998,7 @@ int find_cache (char command[30]) {
 int load_main_function1(char file_array[5][100], int prog_count, int counter) {
 	int tot = 0;
 	int c1=0,c2=0,c3=0,c1_end=0,c2_end=0,c3_end=0;
-	//printf("\n prog_count=%d\n",prog_count);
+	// printf("\n prog_count=%d\n",prog_count);
 	c1 = programs_loc[0][0];
 	 c1_end=c1+programs_loc[0][1];
 	if(prog_count==2){
@@ -942,9 +1017,9 @@ int load_main_function1(char file_array[5][100], int prog_count, int counter) {
 	c3=c3_main;
 	while(tot<FRAME_STORE_SIZE) {
 		if(tot>=counter)return tot;
-		//printf("c1 =%d c1_end=%d",c1,c1_end);
-		//printf("c2 =%d c2_end=%d",c2,c2_end);
-		//printf("c3 =%d c3_end=%d",c3,c3_end);
+		// printf("c1 =%d c1_end=%d",c1,c1_end);
+		// printf("c2 =%d c2_end=%d",c2,c2_end);
+		// printf("c3 =%d c3_end=%d",c3,c3_end);
 		if(c1==c1_end && c2==c2_end && c3==c3_end)break;
 		if(c1 < c1_end) {
 			//frame[page].fileNumber=0;
@@ -1010,7 +1085,7 @@ int load_main_function1(char file_array[5][100], int prog_count, int counter) {
 	 gc1_main=c1;
 	 gc2_main=c2;
 	 gc3_main=c3;
-	//printf("\n end of load main store1\n");
+	// printf("\n end of load main store1\n");
 	return tot;
 }
 void disp_main_frame_store1()
@@ -1023,7 +1098,7 @@ void disp_main_frame_store1()
 int load_main_function2(int prog_count, int counter) {
 	int tot = 0;
 	int c1=0,c2=0,c3=0,c1_end=0,c2_end=0,c3_end=0;
-	printf("\n---------------- total =%d\n",FRAME_STORE_SIZE);
+	// printf("\n---------------- total =%d\n",FRAME_STORE_SIZE);
 	c1 = programs_loc[0][0];
 	 c1_end=c1+programs_loc[0][1];
 	if(prog_count==2){
@@ -1115,7 +1190,7 @@ int load_main_function2(int prog_count, int counter) {
 	c1_main=c1;
 	c2_main=c2;
 	c3_main=c3;
-	printf("\n end of load main store2\n");
+	// printf("\n end of load main store2\n");
 	return tot;
 }
 void move_end(struct Variable* ptr)
